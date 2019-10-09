@@ -67,7 +67,7 @@ I set out to write this engine when I was working on a simple tower-defense game
 Since then I have made a 2-d collectable game, a space-invader clone and most recently, a turn-based strategy game Might is Right, on which I have worked for the past 4 years.
 This is how the engine was created, as a tool to help me build my games. Over time, I started to think that other people might find it useful too.
 
-#To run the demo:
+# To run the demo:
 * clone repository
 * run `npm install`
 * run `npm run "start:dev"`
