@@ -58,7 +58,7 @@ Currently no distributable package exists (TBD) if you want to use the engine, e
         * specify events for starting/stopping tracks for a `SoundEmitter`
 * Animation engine for Mesh animation, animations are suspended automatically when not visible and fast-forwarded when they come into view again, ensuring correct behavior while allowing you to have huge number of animated objects in a single level
 
-#Why another engine?
+# Why another engine?
 I set out to write this engine when I was working on a simple tower-defense game in 2013, back then there were no decent 3-d game engines that would satisfy my requires:
 * fast
 * robust
