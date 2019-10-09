@@ -1,0 +1,60 @@
+{
+  "name": "meep",
+  "productName": "Meep",
+  "description": "Entity Component System game engine",
+  "author": "Alexander Goldring",
+  "version": "1.0.0",
+  "devDependencies": {
+    "@babel/core": "7.5.5",
+    "@babel/preset-env": "7.5.5",
+    "@storybook/addon-actions": "5.0.11",
+    "@storybook/html": "5.0.11",
+    "@types/node": "10.1.4",
+    "add": "2.0.6",
+    "babel-cli": "7.0.0-beta.3",
+    "babel-core": "7.0.0-bridge.0",
+    "babel-loader": "8.0.6",
+    "babel-plugin-external-helpers": "7.0.0-beta.3",
+    "babel-plugin-transform-runtime": "6.23.0",
+    "babel-preset-es2015": "6.24.1",
+    "babel-preset-es2015-rollup": "3.0.0",
+    "babel-preset-es2016": "6.24.1",
+    "browser": "0.2.6",
+    "bundle-collapser": "1.3.0",
+    "cross-env": "5.2.0",
+    "event-stream": "3.3.4",
+    "jest": "24.9.0",
+    "lodash.assign": "4.2.0",
+    "node-notifier": "5.2.1",
+    "node-sass": "4.12.0",
+    "string-replace-webpack-plugin": "0.1.3",
+    "terser-webpack-plugin": "1.2.2",
+    "unassertify": "2.1.0",
+    "vinyl": "2.2.0",
+    "vinyl-buffer": "1.0.1",
+    "vinyl-source-stream": "2.0.0",
+    "watchify": "3.10.0",
+    "webpack": "4.39.2",
+    "webpack-bundle-analyzer": "3.4.1",
+    "webpack-cli": "3.3.7",
+    "webpack-dev-server": "3.8.0"
+  },
+  "browser": {
+    "LZMA": "./app/lib/lzma_worker.js",
+    "msgpack-lite": "./app/lib/msgpack-lite/msgpack.min.js"
+  },
+  "scripts": {
+    "start:dev": "webpack-dev-server",
+    "storybook": "start-storybook -s ./public -p 6006",
+    "build-js": "webpack --mode production"
+  },
+  "dependencies": {
+    "fast-levenshtein": "2.0.6",
+    "gl-matrix": "3.1.0",
+    "msgpack-lite": "0.1.26",
+    "simplex-noise": "2.4.0",
+    "three": "0.109.0",
+    "nearley": "2.19.0",
+    "dat.gui": "0.7.6"
+  }
+}

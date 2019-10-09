@@ -1,0 +1,10 @@
+body{
+    margin:0;
+}
+
+.gui-engine-root{
+    top:0;
+    left:0;
+    position: absolute;
+}
+
