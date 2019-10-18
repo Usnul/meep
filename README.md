@@ -3,6 +3,8 @@ Entity Component System game engine
 
 Currently no distributable package exists (TBD) if you want to use the engine, easiest way is to clone the repository and start building on top of it.
 
+![Loot](https://media.giphy.com/media/fV1HMF7hZKCZNk0E9m/giphy.gif)
+![Attack](https://media.giphy.com/media/lTkYhGuyF9SNQF9YYR/giphy.gif)
 
 # Features:
 * Centralized asset management system (see `AssetManager`)
