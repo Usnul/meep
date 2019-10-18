@@ -4,7 +4,6 @@ Entity Component System game engine
 Currently no distributable package exists (TBD) if you want to use the engine, easiest way is to clone the repository and start building on top of it.
 
 ![Attack](http://server1.lazy-kitty.com/gif/Close_Combat_1_1.gif)
-![Loot](http://server1.lazy-kitty.com/gif/Loot_1_1.gif)
 
 # Features:
 * Centralized asset management system (see `AssetManager`)
@@ -13,7 +12,7 @@ Currently no distributable package exists (TBD) if you want to use the engine, e
 * Simple and powerful event system for communicating between components and the rest of your game
 * Custom serialization framework
     * Extensible - you can easily add serializers for your own components
-    * Fast - framework avoids creating unnecessary gatbage and uses trivial amount of memory 
+    * Fast - framework avoids creating unnecessary garbage and uses trivial amount of memory 
     * Compact - entire world my turn-based strategy game takes up 407 kilobytes, that's evey object in the game with over 15000 entities each with their own components
     * Support for format change. When you decide to change format - you usually break backwards compatibility, in this framework you can provide a small `Upgrader` unit to _teach_ the framework how to upgrade old data to new format, the framework will figure out the shortest `Upgrader` chain to upgrade data of version X to current version Y. This upgrade is done completely transparently to the user. 
 * Thread engine.
