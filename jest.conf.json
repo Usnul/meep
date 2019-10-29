@@ -1,0 +1,11 @@
+{
+  "roots": [
+    "<rootDir>/src"
+  ],
+  "transformIgnorePatterns": [
+    "/node_modules/(?!antlr4ts).+\\.js$"
+  ],
+  "globals": {
+    "ENV_PRODUCTION": true
+  }
+}
