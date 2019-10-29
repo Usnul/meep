@@ -1,7 +1,7 @@
 {
-  "name": "meep",
+  "name": "@woosh/meep",
   "productName": "Meep",
-  "description": "Entity Component System game engine",
+  "description": "production-ready JavaScript game engine based on Entity Component System Architecture",
   "author": "Alexander Goldring",
   "version": "1.0.0",
   "devDependencies": {
