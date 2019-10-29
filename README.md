@@ -1,7 +1,13 @@
 # meep
 Entity Component System game engine
 
-Currently no distributable package exists (TBD) if you want to use the engine, easiest way is to clone the repository and start building on top of it.
+# Installation
+
+via `npm`
+
+```bash
+npm i --save @woosh/meep
+```
 
 ![Attack](http://server1.lazy-kitty.com/gif/Close_Combat_1_1.gif)
 
