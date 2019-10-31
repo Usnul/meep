@@ -41,7 +41,7 @@ import { AchievementManager } from "./achievements/AchievementManager.js";
 import { StorageAchievementGateway } from "./achievements/gateway/StorageAchievementGateway.js";
 import { ClassRegistry } from "../core/model/ClassRegistry.js";
 import { BinarySerializationRegistry } from "./ecs/storage/binary/BinarySerializationRegistry.js";
-
+import { OptionGroup } from "../../view/ui/game/options/OptionGroup.js";
 
 //gui
 const gui = new dat.GUI({
