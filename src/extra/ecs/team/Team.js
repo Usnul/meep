@@ -1,45 +1,48 @@
 /**
  * Created by Alex on 13/04/2016.
  */
-import ObservedInteger from "../../../core/model/ObservedInteger.js";
-import { BinaryClassSerializationAdapter } from "../../../engine/ecs/storage/binary/BinaryClassSerializationAdapter.js";
+
+
+import ObservedInteger from "../../../model/core/model/ObservedInteger.js";
+import { BinaryClassSerializationAdapter } from "../../../model/engine/ecs/storage/binary/BinaryClassSerializationAdapter.js";
 
 /**
- *
- * @param value
- * @constructor
+ * Abstraction to represent affiliation of an entity in the game
+ * @example enemy team and allied team
  */
-function Team(value = 0) {
-    ObservedInteger.call(this, value);
+export class Team extends ObservedInteger {
+    /**
+     *
+     * @param {number} [value]
+     * @constructor
+     */
+    constructor(value = 0) {
+        super(value);
+    }
+
+    clone() {
+        return new Team(this.getValue());
+    }
+
+    /**
+     *
+     * @param {object} json
+     * @returns {Team}
+     */
+    static fromJSON(json) {
+        const t = new Team();
+
+        t.fromJSON(json);
+
+        return t;
+    }
 }
 
 Team.typeName = "Team";
 
-Team.prototype = Object.create(ObservedInteger.prototype);
 
-Team.prototype.constructor = Team;
-
-/**
- *
- * @param {object} json
- * @returns {Team}
- */
-Team.fromJSON = function (json) {
-    const t = new Team();
-
-    t.fromJSON(json);
-
-    return t;
-};
-
-Team.prototype.clone = function () {
-    return new Team(this.getValue());
-};
-
-export default Team;
-
-export class TeamSerializationAdapter extends BinaryClassSerializationAdapter{
-    constructor(){
+export class TeamSerializationAdapter extends BinaryClassSerializationAdapter {
+    constructor() {
         super();
 
         this.klass = Team;

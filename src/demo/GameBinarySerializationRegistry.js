@@ -29,13 +29,13 @@ import { BlackboardSerializationAdapter } from "../model/engine/intelligence/bla
 import { SerializationMetadataSerializationAdapter } from "../model/engine/ecs/components/SerializationMetadata.js";
 import { SteeringSerializationAdapter } from "../model/engine/ecs/components/Steering.js";
 import { MotionSerializationAdapter } from "../model/engine/ecs/components/Motion.js";
+import { TeamSerializationAdapter } from "../extra/ecs/team/Team.js";
 
 export const gameBinarySerializationRegistry = new BinarySerializationRegistry();
 
 
 gameBinarySerializationRegistry.registerAdapters([
     new TransformSerializationAdapter(),
-    new ObjectiveSerializationAdapter(),
     new MinimapMarkerSerializationAdapter(),
     new GeneratedArmySerializationAdapter(),
     new ArmySerializationAdapter(),

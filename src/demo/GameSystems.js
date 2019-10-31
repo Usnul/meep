@@ -29,7 +29,6 @@ import ViewportPositionSystem from '../model/engine/ecs/systems/ViewportPosition
 import GridObstacleSystem from '../model/engine/grid/systems/GridObstacleSystem.js';
 import GridPositionSystem from '../model/engine/grid/systems/GridPositionSystem.js';
 import TopDownCameraControllerSystem from '../model/engine/input/ecs/systems/TopDownCameraControllerSystem.js';
-import InputControllerSystem from '../model/engine/input/ecs/systems/InputControllerSystem.js';
 import HighlightSystem from '../model/graphics/ecs/highlight/HighlightSystem.js';
 import LightSystem from '../model/graphics/ecs/light/LightSystem.js';
 import HeadsUpDisplaySystem from '../model/engine/ecs/systems/HeadsUpDisplaySystem.js';
@@ -47,7 +46,7 @@ import { SerializationMetadataSystem } from "../model/engine/ecs/systems/Seriali
 import { InputSystem } from "../model/engine/input/ecs/systems/InputSystem.js";
 import { AttachmentSocketsSystem } from "../model/engine/ecs/sockets/AttachmentSocketsSystem.js";
 import { AttachmentSystem } from "../model/engine/ecs/attachment/AttachmentSystem.js";
-import TeamSystem from "../model/engine/ecs/team/TeamSystem.js";
+import { TeamSystem } from "../extra/ecs/team/TeamSystem.js";
 
 /**
  *
@@ -103,7 +102,6 @@ function initializeSystems(
         .addSystem(new SynchronizePositionSystem())
         .addSystem(new GridObstacleSystem(grid))
         .addSystem(new GridPositionSystem())
-        .addSystem(new InputControllerSystem(devices))
         .addSystem(new InputSystem(devices))
         .addSystem(new HighlightSystem(graphics))
         .addSystem(new LightSystem(graphics.scene, {

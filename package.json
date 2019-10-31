@@ -3,7 +3,7 @@
   "productName": "Meep",
   "description": "production-ready JavaScript game engine based on Entity Component System Architecture",
   "author": "Alexander Goldring",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "devDependencies": {
     "@babel/core": "7.5.5",
     "@babel/preset-env": "7.5.5",
