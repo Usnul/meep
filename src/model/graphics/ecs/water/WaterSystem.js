@@ -14,8 +14,8 @@ import { NodeWaterShader } from "../water2/NodeWaterShader1.js";
 import { NodeFrame } from "three/examples/jsm/nodes/core/NodeFrame.js";
 import { StandardFrameBuffers } from "../../GraphicsEngine.js";
 import { RenderPassType } from "../../render/RenderPassType.js";
-import { obtainTerrain } from "../../../game/scenes/SceneUtils.js";
 import sampler2D2Texture from "../../texture/sampler/Sampler2D2Texture.js";
+import { obtainTerrain } from "../../../level/terrain/ecs/Terrain.js";
 
 const WATER_SIZE = 400;
 

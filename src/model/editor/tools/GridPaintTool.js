@@ -1,16 +1,16 @@
 import Tool from "./engine/Tool.js";
 import GridPosition from "../../engine/grid/components/GridPosition";
 import GridObstacle from "../../engine/grid/components/GridObstacle";
-import { pick } from "../../game/util/ScreenGridPicker";
 import Vector4 from "../../core/geom/Vector4";
 import { parseHex } from "../../core/color/ColorUtils";
 import ObservedValue from "../../core/model/ObservedValue";
 import Vector1 from "../../core/geom/Vector1";
 import WriteGridValueAction from "../actions/concrete/WriteGridValueAction";
-import { obtainTerrain } from "../../game/scenes/SceneUtils";
 import PaintTerrainOverlayAction from "../actions/concrete/PaintTerrainOverlayAction";
 import { decodeMouseEventButtons, PointerDevice } from "../../engine/input/devices/PointerDevice";
 import Vector2 from "../../core/geom/Vector2.js";
+import { obtainTerrain } from "../../level/terrain/ecs/Terrain.js";
+import { pick } from "../../engine/input/ScreenGridPicker.js";
 
 class GridPaintTool extends Tool {
     constructor() {

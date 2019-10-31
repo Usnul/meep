@@ -25,11 +25,11 @@ import { Light } from "../../graphics/ecs/light/Light.js";
 import Script from "../../engine/ecs/components/Script.js";
 import { max2, min2 } from "../../core/math/MathUtils.js";
 import GridPosition from "../../engine/grid/components/GridPosition.js";
-import { obtainTerrain } from "../../game/scenes/SceneUtils.js";
 import Vector3 from "../../core/geom/Vector3.js";
 import { EventType } from "../../engine/ecs/EntityManager.js";
 import Task from "../../core/process/task/Task.js";
 import TaskSignal from "../../core/process/task/TaskSignal.js";
+import { obtainTerrain } from "../../level/terrain/ecs/Terrain.js";
 
 
 class ComponentSymbolicDisplay extends Process {

@@ -8,13 +8,7 @@ import ViewportPosition from "../ecs/gui/ViewportPosition.js";
 import Vector2 from "../../core/geom/Vector2.js";
 import EntityBuilder from "../ecs/EntityBuilder.js";
 import GUIElement from "../ecs/gui/GUIElement.js";
-import AnimationTrack from "../animation/keyed2/AnimationTrack.js";
-import TransitionFunctions from "../animation/TransitionFunctions.js";
-import { makeCubicCurve } from "../../core/math/MathUtils.js";
-import { SequenceBehavior } from "../intelligence/behavior/composite/SequenceBehavior.js";
 import { ActionBehavior } from "../intelligence/behavior/primitive/ActionBehavior.js";
-import { AnimationBehavior } from "../../game/util/behavior/AnimationBehavior.js";
-import AnimationTrackPlayback from "../animation/keyed2/AnimationTrackPlayback.js";
 import { BehaviorComponent } from "../intelligence/behavior/ecs/BehaviorComponent.js";
 import { SoundEmitter } from "../../sound/ecs/SoundEmitter.js";
 import { SoundEmitterChannels } from "../../sound/ecs/SoundEmitterSystem.js";
@@ -23,10 +17,6 @@ import { SerializationMetadata } from "../ecs/components/SerializationMetadata.j
 import { globalMetrics } from "../metrics/GlobalMetrics.js";
 import { MetricsCategory } from "../metrics/MetricsCategory.js";
 import { ClockChannelType } from "../intelligence/behavior/ecs/ClockChannelType.js";
-
-
-const SLOW_CUBIC = makeCubicCurve(0.04, 0.4, 0.9, 0.99);
-const OVERSHOT_CUBIC_0 = makeCubicCurve(0.04, 0.4, 1.8, 0.99);
 
 /**
  *
@@ -111,6 +101,10 @@ export class AchievementManager {
                 this.deactivate();
             }
         });
+
+        this.behaviorFactory = function (builder) {
+            return new ActionBehavior(()=>                builder.destroy())
+        };
 
         this.handlers = {};
     }
@@ -297,48 +291,14 @@ export class AchievementManager {
 
         viewportPosition.anchor.set(0.5, 0.5);
 
-
-        const aEntry = new AnimationTrack(['scale', 'alpha', 'v']);
-        aEntry.addKey(0, [1.3, 0.2, 0]);
-        aEntry.addKey(0.4, [1, 1, 0.8]);
-        aEntry.addTransition(0, OVERSHOT_CUBIC_0);
-
-        const aMain = new AnimationTrack(["value"]);
-        aMain.addKey(0, [0]);
-        aMain.addKey(5, [1]);
-        aMain.addTransition(0, TransitionFunctions.Linear);
-
-        const aExit = new AnimationTrack(['scale', 'alpha', 'v']);
-        aExit.addKey(0, [1, 1, 0]);
-        aExit.addKey(1, [1, 0, 1]);
-        aExit.addTransition(0, SLOW_CUBIC);
-
         const builder = new EntityBuilder();
 
-        const sequenceBehavior = SequenceBehavior.from([
-            new AnimationBehavior(new AnimationTrackPlayback(aEntry, (scale, alpha, v) => {
-                achievementView.scale.setScalar(scale);
-                achievementView.css({
-                    opacity: alpha
-                });
-            })),
-            new AnimationBehavior(new AnimationTrackPlayback(aMain, (value) => {
-            })),
-            new AnimationBehavior(new AnimationTrackPlayback(aExit, (scale, alpha, v) => {
-                achievementView.scale.setScalar(scale);
-                achievementView.css({
-                    opacity: alpha
-                });
-            })),
-            new ActionBehavior(() => {
-                builder.destroy();
-            })
-        ]);
+        const behavior = this.behaviorFactory(builder);
 
         const cBehavior = new BehaviorComponent();
         //use system clock for behavior
         cBehavior.clock = ClockChannelType.System;
-        cBehavior.list.push(sequenceBehavior);
+        cBehavior.list.push(behavior);
 
         const guiElement = new GUIElement(achievementView);
 

@@ -1,9 +1,9 @@
 import { Process } from "./Process.js";
-import { obtainTerrain } from "../../game/scenes/SceneUtils.js";
 import GridObstacle from "../../engine/grid/components/GridObstacle.js";
 import GridPosition from "../../engine/grid/components/GridPosition.js";
 import Vector4 from "../../core/geom/Vector4.js";
 import { Sampler2D } from "../../graphics/texture/sampler/Sampler2D.js";
+import { obtainTerrain } from "../../level/terrain/ecs/Terrain.js";
 
 class ObstacleGridDisplayProcess extends Process {
 

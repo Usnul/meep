@@ -26,7 +26,6 @@ import NotificationView from "../../../view/ui/elements/notify/NotificationView.
 import Ticker from "../simulation/Ticker.js";
 import { ModalStack } from "./modal/ModalStack.js";
 import { SimpleLifecycle, SimpleLifecycleStateType } from "./modal/SimpleLifecycle.js";
-import { OverlayPageGUI } from "../../game/scenes/strategy/gui/OverlayPageGUI.js";
 import ObservedBoolean from "../../core/model/ObservedBoolean.js";
 import EmptyView from "../../../view/ui/elements/EmptyView.js";
 import LinearModifier from "../../core/model/stat/LinearModifier.js";
@@ -175,35 +174,12 @@ function GUIEngine() {
     this.windows = new List();
 
     /**
-     * When set to 'true' - indicated that GUI engine should be the only one receiving the inputs, this is useful for Modal dialogs and other overlays
-     * @readonly
-     * @type {ObservedBoolean}
-     */
-    const captureInputs = this.captureInputs = new ObservedBoolean(false);
-
-    /**
      *
      * @type {EntityManager|null}
      */
     this.entityManager = null;
 
     this.modals = new ModalStack();
-
-    const pageGUI = this.pages = new OverlayPageGUI();
-    pageGUI.visible = false;
-
-    pageGUI.on.lastRemoved.add(function () {
-        pageGUI.visible = false;
-        //restore controls
-        captureInputs.set(false);
-    });
-
-    pageGUI.on.firstAdded.add(function () {
-        pageGUI.visible = true;
-        //disable scene controls
-        captureInputs.set(true);
-    });
-
 
     /**
      *
@@ -565,7 +541,6 @@ GUIEngine.prototype.startup = function (engine) {
 
     this.notifications.entityManager = engine.entityManager;
 
-    this.view.addChild(this.pages);
 
     engine.gameView.addChild(this.view);
 
@@ -573,8 +548,6 @@ GUIEngine.prototype.startup = function (engine) {
         self.view.size.set(x, y);
 
         self.tooltips.contextView.size.set(x, y);
-
-        self.pages.updateSize(x, y);
     });
 
     this.ticker.start();
@@ -595,11 +568,6 @@ GUIEngine.prototype.startup = function (engine) {
         engine.ticker.clock.speed.removeModifier(clockModifier);
 
     }
-
-    this.pages.localizaiton = localization;
-    this.pages.on.lastRemoved.add(resumeSimulation);
-
-    this.pages.on.firstAdded.add(stopSimulation);
 
     this.modals.on.firstAdded.add(stopSimulation);
     this.modals.on.lastRemoved.add(resumeSimulation);

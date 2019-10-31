@@ -10,8 +10,29 @@ import AnimationTrackPlayback from "./keyed2/AnimationTrackPlayback.js";
 import Transform from "../ecs/components/Transform.js";
 import { createSound, createTimer } from "../EntityCreator.js";
 import { whenAllEntitiesDestroyed, whenEntityDestroyed } from "../ecs/EntityBuilderUtils.js";
-import { removeComponentsExcept } from "../../game/util/AnimatedActions.js";
 import Mesh from "../../graphics/ecs/mesh/Mesh.js";
+
+/**
+ *
+ * @param {EntityComponentDataset} ecd
+ * @param {number} entity
+ * @param {Array} exceptions
+ */
+export function removeComponentsExcept(ecd, entity, exceptions) {
+
+    const components = ecd.getAllComponents(entity);
+    components.forEach(function (component, systemId) {
+        for (let i = 0; i < exceptions.length; i++) {
+            if (component instanceof exceptions[i]) {
+                //keep
+                return;
+            }
+        }
+        //not a component to keep
+        ecd.removeComponentFromEntityByIndex(entity, systemId);
+    });
+
+}
 
 /**
  *
