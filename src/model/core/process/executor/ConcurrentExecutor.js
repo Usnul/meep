@@ -345,6 +345,11 @@ class ConcurrentExecutor {
             while (readyTaskCount > 0) {
                 const task = pickNextTask();
 
+                if (task === undefined) {
+                    console.warn('Next task not found, likely result of removing task mid-execution');
+                    break;
+                }
+
                 try {
                     executionTime = runTaskForTime2(task, sliceTimeLeft, completeTask, failTask);
                 } catch (e) {

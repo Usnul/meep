@@ -5,12 +5,7 @@
 
 import { Node } from './Node';
 import { deserializeLeafNode, isLeaf, LeafNode, serializeLeafNode } from './LeafNode';
-import {
-    deserializeAABB3,
-    deserializeAABB3Quantized16Uint,
-    serializeAABB3,
-    serializeAABB3Quantized16Uint
-} from "./AABB3";
+import { deserializeAABB3, deserializeAABB3Encoded_v0, serializeAABB3, serializeAABB3Encoded_v0 } from "./AABB3";
 import { boxSurfaceArea, boxSurfaceArea2, scoreBoxesSAH } from "./AABB3Math";
 import { BottomUpOptimizingRebuilder } from "./transform/BottomUpOptimizingRebuilder.js";
 import { assert } from "../assert.js";
@@ -1130,7 +1125,7 @@ BinaryNode.prototype.fromBinaryBuffer = function (buffer, leafValueDeserializer)
         node.parentNode = parent;
 
         //read bounds
-        deserializeAABB3Quantized16Uint(buffer, node, parent.x0, parent.y0, parent.z0, parent.x1, parent.y1, parent.z1);
+        deserializeAABB3Encoded_v0(buffer, node, parent.x0, parent.y0, parent.z0, parent.x1, parent.y1, parent.z1);
 
         //read marker
         const marker = buffer.readUint8();
@@ -1166,7 +1161,7 @@ BinaryNode.prototype.fromBinaryBuffer = function (buffer, leafValueDeserializer)
         node.parentNode = parent;
 
         //read bounds
-        deserializeAABB3Quantized16Uint(buffer, node, parent.x0, parent.y0, parent.z0, parent.x1, parent.y1, parent.z1);
+        deserializeAABB3Encoded_v0(buffer, node, parent.x0, parent.y0, parent.z0, parent.x1, parent.y1, parent.z1);
 
         node.object = leafValueDeserializer(buffer);
 
@@ -1237,7 +1232,7 @@ BinaryNode.prototype.toBinaryBuffer = function (buffer, leafValueSerializer) {
      * @param {BinaryNode} parent
      */
     function writeBinaryNode(node, parent) {
-        serializeAABB3Quantized16Uint(buffer, node, parent.x0, parent.y0, parent.z0, parent.x1, parent.y1, parent.z1);
+        serializeAABB3Encoded_v0(buffer, node, parent.x0, parent.y0, parent.z0, parent.x1, parent.y1, parent.z1);
 
         const marker = buildNodeMarker(node);
 
@@ -1262,7 +1257,7 @@ BinaryNode.prototype.toBinaryBuffer = function (buffer, leafValueSerializer) {
      * @param {BinaryNode} parent
      */
     function writeLeafNode(node, parent) {
-        serializeAABB3Quantized16Uint(buffer, node, parent.x0, parent.y0, parent.z0, parent.x1, parent.y1, parent.z1);
+        serializeAABB3Encoded_v0(buffer, node, parent.x0, parent.y0, parent.z0, parent.x1, parent.y1, parent.z1);
         leafValueSerializer(buffer, node.object);
     }
 

@@ -31,26 +31,29 @@ export class StrategicResourceAllocator {
          */
         const bids = new Map();
 
-        const moduleResults = this.modules.map(m => {
-            const promise = m.collectBids(resources);
 
-            assert.notEqual(promise, undefined, 'promise is undefined');
-            assert.notEqual(promise, null, 'promise is null');
-            assert.typeOf(promise.then, 'function', "promise.then");
+        return new Promise((resolve, reject) => {
+            const moduleResults = this.modules.map(m => {
+                const promise = m.collectBids(resources);
 
-            promise.then(moduleBids => {
+                assert.notEqual(promise, undefined, 'promise is undefined');
+                assert.notEqual(promise, null, 'promise is null');
+                assert.typeOf(promise.then, 'function', "promise.then");
 
-                assert.ok(Array.isArray(moduleBids), `moduleBids expected to be an array, was something else (typeof='${typeof moduleBids}')`);
+                promise.then(moduleBids => {
 
-                moduleBids.forEach(b => bids.set(b, m));
+                    assert.ok(Array.isArray(moduleBids), `moduleBids expected to be an array, was something else (typeof='${typeof moduleBids}')`);
 
+                    moduleBids.forEach(b => bids.set(b, m));
+
+                });
+
+                return promise;
             });
 
-            return promise;
-        });
-
-
-        return Promise.all(moduleResults)
+            resolve(moduleResults);
+        })
+            .then(moduleResults => Promise.all(moduleResults))
             .then(() => {
                 /**
                  *
@@ -69,7 +72,15 @@ export class StrategicResourceAllocator {
                  */
                 const allocations = solver.solve();
 
-                return allocations.map(a => a.actions).flat();
+                const actionSequences = allocations.map(a => a.actions);
+
+                //sort action sequences based on their priorities
+                actionSequences.sort((a, b) => a.priority - b.priority);
+
+                //extract actions from sequences in order
+                const actions = actionSequences.map(s => s.actions).flat();
+
+                return actions;
             });
     }
 }

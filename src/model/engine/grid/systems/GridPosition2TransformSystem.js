@@ -6,7 +6,7 @@ import Transform from '../../ecs/components/Transform';
 import GridPosition from '../components/GridPosition';
 import { GridPosition2Transform } from '../components/GridPosition2Transform';
 import Vector3 from "../../../core/geom/Vector3.js";
-import { obtainTerrain } from "../../../level/terrain/ecs/Terrain.js";
+import { obtainTerrain } from "../../../game/scenes/SceneUtils.js";
 
 
 export class GridPosition2TransformSystem extends System {

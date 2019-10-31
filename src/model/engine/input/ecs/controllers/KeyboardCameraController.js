@@ -80,7 +80,7 @@ function KeyboardCameraController(topDownCameraController) {
     this.builder = new EntityBuilder()
         .add(inputController)
         .add(SerializationMetadata.Transient)
-        .add(Tag.fromJSON('Keyboard Camera Controller'))
+        .add(Tag.fromJSON(['Keyboard Camera Controller']))
         .add(script);
 }
 

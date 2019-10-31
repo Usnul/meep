@@ -1,12 +1,16 @@
-import { Process } from "./Process.js";
+import { Process, ProcessState } from "./Process.js";
 import { EntityObserver } from "../../engine/ecs/EntityObserver.js";
 import { ParticleEmitter } from "../../graphics/particles/particular/engine/emitter/ParticleEmitter.js";
 import Transform from "../../engine/ecs/components/Transform.js";
 import EntityBuilder from "../../engine/ecs/EntityBuilder.js";
 import Renderable from "../../engine/ecs/components/Renderable.js";
 import {
+    BufferGeometry,
     CameraHelper,
     DirectionalLightHelper,
+    Float32BufferAttribute,
+    Line,
+    LineBasicMaterial,
     PointLightHelper,
     SpotLightHelper,
     Sprite,
@@ -20,6 +24,12 @@ import { Camera } from "../../graphics/ecs/camera/Camera.js";
 import { Light } from "../../graphics/ecs/light/Light.js";
 import Script from "../../engine/ecs/components/Script.js";
 import { max2, min2 } from "../../core/math/MathUtils.js";
+import GridPosition from "../../engine/grid/components/GridPosition.js";
+import { obtainTerrain } from "../../game/scenes/SceneUtils.js";
+import Vector3 from "../../core/geom/Vector3.js";
+import { EventType } from "../../engine/ecs/EntityManager.js";
+import Task from "../../core/process/task/Task.js";
+import TaskSignal from "../../core/process/task/TaskSignal.js";
 
 
 class ComponentSymbolicDisplay extends Process {
@@ -463,6 +473,202 @@ function makeCameraSymbolicDisplay(editor) {
     return display;
 }
 
+/**
+ *
+ * @param {Editor} editor
+ */
+function makeGridPositionSymbolDisplay(editor) {
+    /**
+     *
+     * @type {Engine}
+     */
+    const engine = editor.engine;
+
+    /**
+     *
+     * @type {EntityManager}
+     */
+    const em = engine.entityManager;
+
+    /**
+     *
+     * @type {EntityBuilder[]}
+     */
+    const entities = [];
+
+    const updateQueue = [];
+
+    const tTerrainWaiter = new Task({
+        name: 'terrain-waiter',
+        cycleFunction() {
+            if (updateQueue.length === 0) {
+                return TaskSignal.Yield;
+            }
+
+            const f = updateQueue.shift();
+
+            f();
+
+            return TaskSignal.Continue;
+        }
+    });
+
+    /**
+     *
+     * @param {GridPosition} gridPosition
+     * @param {Transform} transform
+     * @returns {EntityBuilder}
+     */
+    function makeHelper(gridPosition, transform) {
+        const builder = new EntityBuilder();
+
+        const lineMaterial = new LineBasicMaterial({ color: 0xFFFFFF });
+        lineMaterial.depthTest = false;
+
+        const lineGeometry = new BufferGeometry();
+
+        const positionAttribute = new Float32BufferAttribute(new Float32Array(6), 3);
+        lineGeometry.addAttribute('position', positionAttribute);
+
+
+        //find terrain
+        const terrain = obtainTerrain(em.dataset);
+
+        const line = new Line(lineGeometry, lineMaterial);
+
+        line.updateMatrixWorld();
+        line.frustumCulled = false;
+
+        const renderable = new Renderable(line);
+        renderable.matrixAutoUpdate = false;
+
+        const p0 = transform.position;
+        const p1 = new Vector3();
+
+        /**
+         *
+         * @returns {boolean}
+         */
+        function updateGridPosition() {
+
+            //get grid position in the world
+            terrain.mapPointGrid2World(gridPosition.x, gridPosition.y, p1);
+
+            return terrain.raycastFirstSync(p1, p1.x, -(terrain.heightRange + 1), p1.z, 0, 1, 0);
+
+        }
+
+        function updateGeometry() {
+            positionAttribute.setXYZ(0, p0.x, p0.y, p0.z);
+            positionAttribute.setXYZ(1, p1.x, p1.y, p1.z);
+
+            positionAttribute.needsUpdate = true;
+        }
+
+        function updateBounds() {
+            const x0 = min2(p0.x, p1.x),
+                y0 = min2(p0.y, p1.y),
+                z0 = min2(p0.z, p1.z),
+                x1 = max2(p0.x, p1.x),
+                y1 = max2(p0.y, p1.y),
+                z1 = max2(p0.z, p1.z);
+
+            renderable.boundingBox.setBounds(x0, y0, z0, x1, y1, z1);
+
+            renderable.bvh.resize(x0, y0, z0, x1, y1, z1);
+        }
+
+        function attemptUpdate() {
+            if (updateGridPosition()) {
+                updateGeometry();
+                updateBounds();
+            } else if (updateQueue.indexOf(attemptUpdate) === -1) {
+                updateQueue.push(attemptUpdate);
+            }
+        }
+
+        attemptUpdate();
+
+        builder
+            .add(renderable)
+            .add(new Transform())
+            .add(new EditorEntity());
+
+        builder.addEventListener(EventType.EntityRemoved, () => {
+            p0.onChanged.remove(attemptUpdate);
+            gridPosition.onChanged.remove(attemptUpdate);
+        });
+
+        builder.on.built.add(() => {
+            p0.onChanged.add(attemptUpdate);
+            gridPosition.onChanged.add(attemptUpdate);
+
+            attemptUpdate();
+        });
+
+        return builder;
+    }
+
+    /**
+     *
+     * @param {GridPosition} gridPosition
+     * @param {Transform} transform
+     * @param {number} entity
+     */
+    function added(gridPosition, transform, entity) {
+        const ecd = em.dataset;
+
+        const editorEntity = ecd.getComponent(entity, EditorEntity);
+
+        if (editorEntity !== undefined) {
+            //skip editor's own entities
+            return;
+        }
+
+        const entityBuilder = makeHelper(gridPosition, transform);
+
+        entityBuilder.build(ecd);
+
+        entities[entity] = entityBuilder;
+    }
+
+    /**
+     *
+     * @param {GridPosition} gridPosition
+     * @param {Transform} transform
+     * @param {number} entity
+     */
+    function removed(gridPosition, transform, entity) {
+        const builder = entities[entity];
+
+        if (builder === undefined) {
+            return;
+        }
+
+        delete entities[entity];
+
+        builder.destroy();
+    }
+
+    const display = new ComponentSymbolicDisplay([GridPosition, Transform], added, removed);
+
+
+    display.state.onChanged.add((s0, s1) => {
+        if (s0 === ProcessState.Running) {
+            //started
+            engine.executor.run(tTerrainWaiter);
+        } else if (s1 === ProcessState.Running) {
+            //stopepd
+            engine.executor.removeTask(tTerrainWaiter);
+
+            //purge update queue
+            updateQueue.splice(0, updateQueue.length);
+        }
+    });
+
+    return display;
+}
+
 class SymbolicDisplayProcess extends Process {
     constructor() {
         super();
@@ -494,7 +700,8 @@ class SymbolicDisplayProcess extends Process {
             makePositionedIconDisplaySymbol(editor, "data/textures/icons/editor/light.png", Light),
 
             makeCameraSymbolicDisplay(editor),
-            makeLightSymbolicDisplay(editor)
+            makeLightSymbolicDisplay(editor),
+            makeGridPositionSymbolDisplay(editor)
         ];
 
         this.displays.forEach(d => d.initialize(editor));
@@ -518,8 +725,6 @@ class SymbolicDisplayProcess extends Process {
                 self.spawnedSystems.push(system);
 
                 entityManager.addSystem(system);
-
-                entityManager.startSystem(system, console.log, console.error);
             }
         });
 

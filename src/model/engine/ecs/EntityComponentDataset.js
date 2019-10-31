@@ -862,6 +862,10 @@ EntityComponentDataset.prototype.traverseEntities = function (classes, visitor, 
 
         const componentIndex = this.computeComponentTypeIndex(k);
 
+        if (componentIndex === -1) {
+            throw new Error(`Component (index=${i}) not found in the dataset`);
+        }
+
         indices[i] = componentIndex;
     }
 

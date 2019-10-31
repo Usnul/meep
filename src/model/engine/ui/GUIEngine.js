@@ -5,8 +5,8 @@
 
 import List from '../../core/collection/List';
 
-import GUIElement from '../../engine/ecs/components/GUIElement';
-import ViewportPosition from '../../engine/ecs/components/ViewportPosition';
+import GUIElement from '../ecs/gui/GUIElement.js';
+import ViewportPosition from '../ecs/gui/ViewportPosition.js';
 
 import EntityBuilder from '../../engine/ecs/EntityBuilder';
 
@@ -17,16 +17,16 @@ import View from '../../../view/View';
 import TransitionFunctions from "../animation/TransitionFunctions";
 import AnimationTrack from "../animation/keyed2/AnimationTrack";
 import AnimationTrackPlayback from "../animation/keyed2/AnimationTrackPlayback";
+import { playTrackRealTime } from "../animation/AnimationUtils.js";
 import { TooltipManager } from "../../../view/ui/tooltip/TooltipManager";
 import { DomTooltipManager } from "../../../view/ui/tooltip/DomTooltipManager.js";
 import { NotificationManager } from "./notification/NotificationManager.js";
 import ViewEmitter from "./notification/ViewEmitter.js";
-import { Notification } from "../notify/Notification.js";
 import NotificationView from "../../../view/ui/elements/notify/NotificationView.js";
-import { randomFromArray } from "../../core/math/MathUtils.js";
 import Ticker from "../simulation/Ticker.js";
 import { ModalStack } from "./modal/ModalStack.js";
 import { SimpleLifecycle, SimpleLifecycleStateType } from "./modal/SimpleLifecycle.js";
+import { OverlayPageGUI } from "../../game/scenes/strategy/gui/OverlayPageGUI.js";
 import ObservedBoolean from "../../core/model/ObservedBoolean.js";
 import EmptyView from "../../../view/ui/elements/EmptyView.js";
 import LinearModifier from "../../core/model/stat/LinearModifier.js";
@@ -35,59 +35,8 @@ import { assert } from "../../core/assert.js";
 import ObservedString from "../../core/model/ObservedString.js";
 import { CursorType } from "./cursor/CursorType.js";
 import { noop } from "../../core/function/Functions.js";
+import { SerializationMetadata } from "../ecs/components/SerializationMetadata.js";
 
-function notificationGenerator(callback, timeout = 5) {
-    const phrases = [
-        "Hello World",
-        "Fluffy Kitty",
-        "Looking good",
-        "Strange Rainbow",
-        "Shrubbery",
-        "What for",
-        "Strawberry Sunday",
-        "Mellow Melon",
-        "This sure is a long piece of text"
-    ];
-
-    const descriptions = [
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla suscipit tristique elit ut sollicitudin. Pellentesque ornare orci dolor, vitae cursus leo consectetur at",
-        "In venenatis turpis eu diam blandit rhoncus. Donec viverra dapibus cursus",
-        "Maecenas eget magna id lacus efficitur bibendum ultrices sit amet metus."
-    ];
-
-    const icons = [];
-
-    for (let i = 10; i < 109; i++) {
-        icons.push(`data/textures/icons/SpellBookPage09/SpellBookPage09_${i}.png`);
-    }
-
-    setInterval(function () {
-        const notification = new Notification({
-            title: randomFromArray(phrases, Math.random),
-            description: randomFromArray(descriptions, Math.random),
-            image: randomFromArray(icons, Math.random)
-        });
-        callback(notification);
-    }, timeout * 1000);
-}
-
-/**
- *
- * @param {NotificationManager} notifications
- */
-function testNotifications(notifications) {
-    notificationGenerator(n => {
-        notifications.addNotification(n, NotificationAreaKind.Primary);
-    }, 1.3);
-
-    notificationGenerator(n => {
-        notifications.addNotification(n, NotificationAreaKind.Secondary);
-    }, 3);
-
-    notificationGenerator(n => {
-        notifications.addNotification(n, NotificationAreaKind.Toast);
-    }, 1);
-}
 
 /**
  * @readonly
@@ -226,12 +175,35 @@ function GUIEngine() {
     this.windows = new List();
 
     /**
+     * When set to 'true' - indicated that GUI engine should be the only one receiving the inputs, this is useful for Modal dialogs and other overlays
+     * @readonly
+     * @type {ObservedBoolean}
+     */
+    const captureInputs = this.captureInputs = new ObservedBoolean(false);
+
+    /**
      *
      * @type {EntityManager|null}
      */
     this.entityManager = null;
 
     this.modals = new ModalStack();
+
+    const pageGUI = this.pages = new OverlayPageGUI();
+    pageGUI.visible = false;
+
+    pageGUI.on.lastRemoved.add(function () {
+        pageGUI.visible = false;
+        //restore controls
+        captureInputs.set(false);
+    });
+
+    pageGUI.on.firstAdded.add(function () {
+        pageGUI.visible = true;
+        //disable scene controls
+        captureInputs.set(true);
+    });
+
 
     /**
      *
@@ -314,7 +286,8 @@ GUIEngine.prototype.openWindow = function ({ closeable, content, title, wrapper 
     }
 
     const guiElement = new GUIElement(vElement);
-    entityBuilder.add(guiElement);
+    entityBuilder.add(guiElement)
+        .add(SerializationMetadata.Transient);
 
     const dataset = this.entityManager.dataset;
 
@@ -381,6 +354,7 @@ GUIEngine.prototype.createModal = function ({ content, title, priority = 0 }) {
 
         const builder = new EntityBuilder();
 
+        builder.add(SerializationMetadata.Transient);
         builder.add(new GUIElement(overlay));
         return builder;
     }
@@ -580,7 +554,7 @@ GUIEngine.prototype.startup = function (engine) {
      */
     const localization = engine.localization;
 
-    this.gml.initialize(localization);
+    this.gml.initialize(engine.staticKnowledge, localization);
 
     this.tooltips.initialize(this.gml, engine.devices.pointer);
 
@@ -591,12 +565,16 @@ GUIEngine.prototype.startup = function (engine) {
 
     this.notifications.entityManager = engine.entityManager;
 
+    this.view.addChild(this.pages);
+
     engine.gameView.addChild(this.view);
 
     engine.gameView.size.process(function (x, y) {
         self.view.size.set(x, y);
 
         self.tooltips.contextView.size.set(x, y);
+
+        self.pages.updateSize(x, y);
     });
 
     this.ticker.start();
@@ -617,6 +595,11 @@ GUIEngine.prototype.startup = function (engine) {
         engine.ticker.clock.speed.removeModifier(clockModifier);
 
     }
+
+    this.pages.localizaiton = localization;
+    this.pages.on.lastRemoved.add(resumeSimulation);
+
+    this.pages.on.firstAdded.add(stopSimulation);
 
     this.modals.on.firstAdded.add(stopSimulation);
     this.modals.on.lastRemoved.add(resumeSimulation);

@@ -117,15 +117,23 @@ function gotoTag(em, pathFinder, entity, tagName) {
     let d = Math.POSITIVE_INFINITY;
     const sourceTransform = em.getComponent(entity, Transform);
     const sourcePosition = sourceTransform.position;
-    em.traverseEntities([Tag, Transform], function (tag, transform) {
-        if (tag.name === tagName) {
+
+    /**
+     *
+     * @param {Tag} tag
+     * @param {Transform} transform
+     */
+    function visitTag(tag, transform) {
+        if (tag.contains(tagName)) {
             const distanceToSquared = transform.position.distanceToSquared(sourcePosition);
             if (target === null || distanceToSquared < d) {
                 target = transform;
                 d = distanceToSquared;
             }
         }
-    });
+    }
+
+    em.traverseEntities([Tag, Transform], visitTag);
     navigateTo(em, entity, target, pathFinder);
 }
 

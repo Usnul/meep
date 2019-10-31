@@ -105,15 +105,22 @@ Signal.prototype.add = function (h, context) {
  *
  * @param {SignalHandler[]} handlers
  * @param {function} f
+ * @param thisArg
  * @returns {number} index of the handler, or -1 if not found
  */
-export function findSignalHandlerIndexByHandle(handlers, f) {
+export function findSignalHandlerIndexByHandle(handlers, f, thisArg) {
     const l = handlers.length;
 
     for (let i = 0; i < l; i++) {
         const signalHandler = handlers[i];
 
         if (signalHandler.handle === f) {
+
+            if (thisArg !== undefined && thisArg !== signalHandler.context) {
+                //context variable doesn't match
+                continue;
+            }
+
             return i;
         }
     }
@@ -260,8 +267,47 @@ Signal.prototype.dispatch = function (...args) {
  * Allows JS engine to optimize for monomorphic call sites
  */
 Signal.prototype.send0 = function () {
-    //TODO implement actual monomorphic call
-    this.dispatch();
+    if (this.silent) {
+        //don't dispatch any events while silent
+        return;
+    }
+
+    const handlers = this.handlers;
+
+    const length = handlers.length;
+
+    const proxy = this.__temp;
+
+    let i, h;
+
+    // Copy handlers into a temp storage to preserve state during dispatch
+    for (i = 0; i < length; i++) {
+        //copy to proxy
+        proxy[i] = handlers[i];
+    }
+
+    // Dispatch phase
+    for (i = length - 1; i >= 0; i--) {
+        h = proxy[i];
+
+        if (h.getFlag(SignalHandlerFlags.RemoveAfterExecution)) {
+            //handler should be cut
+            const p = handlers.indexOf(h);
+            handlers.splice(p, 1);
+        }
+
+        const f = h.handle;
+
+        try {
+            f.call(h.context)
+        } catch (e) {
+            console.error("Failed to dispatch handler", f, e);
+        }
+
+    }
+
+    //clear out temp storage
+    proxy.lenght = 0;
 };
 
 /**
@@ -270,8 +316,47 @@ Signal.prototype.send0 = function () {
  * @param {*} arg
  */
 Signal.prototype.send1 = function (arg) {
-    //TODO implement actual monomorphic call
-    this.dispatch(arg);
+    if (this.silent) {
+        //don't dispatch any events while silent
+        return;
+    }
+
+    const handlers = this.handlers;
+
+    const length = handlers.length;
+
+    const proxy = this.__temp;
+
+    let i, h;
+
+    // Copy handlers into a temp storage to preserve state during dispatch
+    for (i = 0; i < length; i++) {
+        //copy to proxy
+        proxy[i] = handlers[i];
+    }
+
+    // Dispatch phase
+    for (i = length - 1; i >= 0; i--) {
+        h = proxy[i];
+
+        if (h.getFlag(SignalHandlerFlags.RemoveAfterExecution)) {
+            //handler should be cut
+            const p = handlers.indexOf(h);
+            handlers.splice(p, 1);
+        }
+
+        const f = h.handle;
+
+        try {
+            f.call(h.context, arg)
+        } catch (e) {
+            console.error("Failed to dispatch handler", f, e);
+        }
+
+    }
+
+    //clear out temp storage
+    proxy.lenght = 0;
 };
 
 /**
@@ -280,8 +365,47 @@ Signal.prototype.send1 = function (arg) {
  * @param {*} b
  */
 Signal.prototype.send2 = function (a, b) {
-    //TODO implement actual monomorphic call
-    this.dispatch(a, b);
+    if (this.silent) {
+        //don't dispatch any events while silent
+        return;
+    }
+
+    const handlers = this.handlers;
+
+    const length = handlers.length;
+
+    const proxy = this.__temp;
+
+    let i, h;
+
+    // Copy handlers into a temp storage to preserve state during dispatch
+    for (i = 0; i < length; i++) {
+        //copy to proxy
+        proxy[i] = handlers[i];
+    }
+
+    // Dispatch phase
+    for (i = length - 1; i >= 0; i--) {
+        h = proxy[i];
+
+        if (h.getFlag(SignalHandlerFlags.RemoveAfterExecution)) {
+            //handler should be cut
+            const p = handlers.indexOf(h);
+            handlers.splice(p, 1);
+        }
+
+        const f = h.handle;
+
+        try {
+            f.call(h.context, a, b)
+        } catch (e) {
+            console.error("Failed to dispatch handler", f, e);
+        }
+
+    }
+
+    //clear out temp storage
+    proxy.lenght = 0;
 };
 
 /**

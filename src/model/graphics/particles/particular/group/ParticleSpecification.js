@@ -1,4 +1,5 @@
 import { ParticleGroup } from "./ParticleGroup.js";
+import { assert } from "../../../../core/assert.js";
 
 
 /**
@@ -19,6 +20,8 @@ export function ParticleSpecification() {
  * @returns {ParticleSpecification}
  */
 ParticleSpecification.prototype.add = function (attribute) {
+    assert.notEqual(attribute, undefined, 'attribute is undefined');
+
     //check uniqueness of name
     if (this.attributes.some(function (a) {
         return a.name === attribute.name;

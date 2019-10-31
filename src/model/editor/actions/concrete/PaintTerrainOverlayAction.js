@@ -1,6 +1,6 @@
+import { obtainTerrain } from "../../../game/scenes/SceneUtils";
 import Vector4 from "../../../core/geom/Vector4";
 import { Action } from "../Action.js";
-import { obtainTerrain } from "../../../level/terrain/ecs/Terrain.js";
 
 class PaintTerrainOverlayAction extends Action {
     /**

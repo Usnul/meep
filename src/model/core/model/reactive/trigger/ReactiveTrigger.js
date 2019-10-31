@@ -41,6 +41,15 @@ export class ReactiveTrigger {
     }
 
     /**
+     *
+     * @param {function(ReactiveReference)} visitor
+     * @param {*} [thisArg]
+     */
+    traverseReferences(visitor, thisArg) {
+        this.references.forEach(visitor, thisArg);
+    }
+
+    /**
      * Given a dictionary-style object, connect references in the expression to values of properties with matching names.
      * @example given object {a: Vector1} and expression a > 7, value of A will be taken from that input object
      * @param {Object} data

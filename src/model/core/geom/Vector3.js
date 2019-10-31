@@ -551,6 +551,95 @@ class Vector3 {
         this.set(x, y, z);
     }
 
+    /**
+     *
+     * @param {BinaryBuffer} buffer
+     */
+    toBinaryBufferFloat32_EqualityEncoded(buffer){
+        const x = this.x;
+        const y = this.y;
+        const z = this.z;
+
+        let header = 0;
+
+        if (x === y) {
+            header |= 1;
+        }
+
+        if (y === z) {
+            header |= 2;
+        }
+
+        if (x === z) {
+            header |= 4;
+        }
+
+        buffer.writeUint8(header);
+
+        if ((header & 7) === 7) {
+            //all components are the same
+            buffer.writeFloat32(x);
+        } else if (header === 1) {
+            //X and Y are the same, Z is different
+            buffer.writeFloat32(x);
+            buffer.writeFloat32(z);
+        } else if (header === 2) {
+            //Y and Z are the same, X is different
+            buffer.writeFloat32(x);
+            buffer.writeFloat32(y);
+        } else if (header === 4) {
+            //X and Z are the same, Y is different
+            buffer.writeFloat32(x);
+            buffer.writeFloat32(y);
+        } else {
+            //scale components are different
+            buffer.writeFloat32(x);
+            buffer.writeFloat32(y);
+            buffer.writeFloat32(z);
+        }
+    }
+
+    /**
+     *
+     * @param {BinaryBuffer} buffer
+     */
+    fromBinaryBufferFloat32_EqualityEncoded(buffer){
+        const header = buffer.readUint8();
+
+        let x = 0;
+        let y = 0;
+        let z = 0;
+
+        if ((header & 7) === 7) {
+            //all scale components are the same
+            x = buffer.readFloat32();
+            y = x;
+            z = x;
+        } else if ((header & 1) === 1) {
+            //X and Y are the same, Z is different
+            x = buffer.readFloat32();
+            y = x;
+            z = buffer.readFloat32();
+        } else if ((header & 2) === 2) {
+            //Y and Z are the same, X is different
+            x = buffer.readFloat32();
+            y = buffer.readFloat32();
+            z = y;
+        } else if ((header & 4) === 4) {
+            //X and Z are the same, Y is different
+            x = buffer.readFloat32();
+            y = buffer.readFloat32();
+            z = x;
+        } else {
+            //scale components are different
+            x = buffer.readFloat32();
+            y = buffer.readFloat32();
+            z = buffer.readFloat32();
+        }
+
+        this.set(x,y, z);
+    }
+
     hash() {
         let hash = computeHashFloat(this.x);
 

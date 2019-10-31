@@ -1,12 +1,12 @@
 import Tool from "./engine/Tool.js";
 import Vector1 from "../../core/geom/Vector1";
+import { obtainTerrain } from "../../game/scenes/SceneUtils";
 import ObservedValue from "../../core/model/ObservedValue";
 import { parseHex } from "../../core/color/ColorUtils";
 import Vector4 from "../../core/geom/Vector4";
 import loadSampler2D from "../../graphics/texture/sampler/loadSampler2D";
 import convertSampler2D2Canvas from "../../graphics/texture/sampler/Sampler2D2Canvas";
 import { Foliage2 } from "../../level/foliage/ecs/Foliage2.js";
-import { obtainTerrain } from "../../level/terrain/ecs/Terrain.js";
 
 class FoliagePaintTool extends Tool {
     constructor() {

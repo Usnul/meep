@@ -144,7 +144,7 @@ SceneManager.prototype.set = function (name) {
     const scene = this.getByName(name);
 
     if (scene === undefined) {
-        throw new Error(`Scene named '${name}' doesn't exist`);
+        throw new Error(`Scene named '${name}' doesn't exist, valid options are: [${this.scenes.map(s => s.name).join(', ')}]`);
     }
 
     if (this.currentScene === scene) {

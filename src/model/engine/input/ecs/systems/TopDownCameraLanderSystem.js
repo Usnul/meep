@@ -1,12 +1,12 @@
 import { System } from "../../../ecs/System.js";
 import { TopDownCameraLander } from "../components/TopDownCameraLander.js";
 import { Cache } from "../../../../core/Cache.js";
+import { obtainTerrain } from "../../../../game/scenes/SceneUtils.js";
 import { buildCameraTargetSampler } from "../util/TerrainCameraTargetSampler.js";
 import Vector3 from "../../../../core/geom/Vector3.js";
 import TopDownCameraController from "../components/TopDownCameraController.js";
 import Vector2 from "../../../../core/geom/Vector2.js";
 import { SignalBinding } from "../../../../core/events/signal/SignalBinding.js";
-import { obtainTerrain } from "../../../../level/terrain/ecs/Terrain.js";
 
 
 /**

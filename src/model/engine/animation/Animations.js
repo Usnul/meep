@@ -6,7 +6,7 @@
 import Transform from "../ecs/components/Transform";
 import Mesh from "../../graphics/ecs/mesh/Mesh";
 import Tween from "./Tween";
-import GUIElement from "../ecs/components/GUIElement.js";
+import GUIElement from "../ecs/gui/GUIElement.js";
 
 function doMaterial(m, what) {
     const materials = m.materials;

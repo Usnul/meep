@@ -43,6 +43,11 @@ Set.prototype.add = function (el) {
         this.data.push(el);
         this.length++;
         this.on.added.dispatch(el);
+
+        return true;
+    } else {
+        //element already exists
+        return false;
     }
 };
 
@@ -52,8 +57,14 @@ Set.prototype.add = function (el) {
  */
 Set.prototype.remove = function (el) {
     const index = this.data.indexOf(el);
+
     if (index !== -1) {
         this.__removeByIndex(index, el);
+
+        return true;
+    } else {
+        //element not found
+        return false;
     }
 };
 
@@ -67,6 +78,23 @@ Set.prototype.__removeByIndex = function (index, el) {
     this.data.splice(index, 1);
     this.length--;
     this.on.removed.dispatch(el);
+};
+
+/**
+ *
+ * @returns {boolean}
+ */
+Set.prototype.isEmpty = function () {
+    return this.length <= 0;
+};
+
+/**
+ * Remove all elements from the set
+ */
+Set.prototype.clear = function () {
+    while (!this.isEmpty()) {
+        this.remove(this.data[0]);
+    }
 };
 
 /**
@@ -116,13 +144,34 @@ Set.prototype.forEach = function (visitor) {
     }
 };
 
+
+/**
+ * @template T
+ * @param {T[]} array
+ * @param {T} element
+ * @param {function(a:T,b:T):boolean} equals
+ * @returns {number}
+ */
+function arrayIndexByEquality(array, element, equals) {
+    for (let i = 0; i < array.length; i++) {
+        const el = array[i];
+
+        if (equals(element, el)) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
 /**
  *
  * @param {[]} a
  * @param {[]} b
+ * @param {function(a,b):boolean} [equals]
  * @returns {{uniqueA:[], uniqueB:[], common:[]}}
  */
-export function arraySetDiff(a, b) {
+export function arraySetDiff(a, b, equals) {
     const uniqueA = a.slice();
     const uniqueB = b.slice();
 

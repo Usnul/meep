@@ -8,14 +8,16 @@ import { AssetManager } from './asset/AssetManager';
 import InputEngine from '../InputEngine';
 import { GraphicsEngine } from '../graphics/GraphicsEngine';
 import SoundEngine from '../sound/SoundEngine';
+import { initializeSystems } from './GameSystems';
 import { PerspectiveCamera as ThreePerspectiveCamera, Scene as ThreeScene } from 'three';
 import { PointerDevice } from "./input/devices/PointerDevice";
 import KeyboardDevice from "./input/devices/KeyboardDevice";
 import LevelEngine from '../level/LevelEngine';
 import Grid from './grid/Grid';
 import Preloader from "./asset/preloader/Preloader";
-import SceneManager from "./scene/SceneManager.js";
+import SceneManager from "./ecs/SceneManager";
 
+import { StrategyScene } from "../game/scenes/strategy/StrategyScene";
 import TaskProgressView from '../../view/ui/common/TaskProgressView';
 import CompressionService from "./compression/CompressionService";
 
@@ -34,14 +36,21 @@ import Vector1 from "../core/geom/Vector1.js";
 import { ViewStack } from "../../view/ui/elements/navigation/ViewStack.js";
 import EmptyView from "../../view/ui/elements/EmptyView.js";
 import { assert } from "../core/assert.js";
+import { makeEngineOptionsModel } from "../../view/ui/game/options/OptionsView.js";
+import { StaticKnowledgeDatabase } from "../game/database/StaticKnowledgeDatabase";
 import Ticker from "./simulation/Ticker.js";
 import { Localization } from "../core/Localization.js";
+import { TutorialManager } from "../game/tutorial/TutorialManager.js";
 import { IndexedDBStorage } from "./save/storage/IndexedDBStorage.js";
+import { launchElementIntoFullscreen } from "../graphics/Utils.js";
 import { globalMetrics } from "./metrics/GlobalMetrics.js";
 import { MetricsCategory } from "./metrics/MetricsCategory.js";
 import { AchievementManager } from "./achievements/AchievementManager.js";
 import { StorageAchievementGateway } from "./achievements/gateway/StorageAchievementGateway.js";
-import { OptionGroup } from "../../view/ui/game/options/OptionGroup.js";
+import { HelpManager } from "../game/help/HelpManager.js";
+import { EffectManager } from "../game/util/effects/script/EffectManager.js";
+import { ClassRegistry } from "../core/model/ClassRegistry.js";
+import { StoryManager } from "./story/dialogue/StoryManager.js";
 
 
 //gui
@@ -100,7 +109,13 @@ Engine.prototype.initialize = function () {
      *
      * @type {OptionGroup}
      */
-    this.options = new OptionGroup();
+    this.options = makeEngineOptionsModel(this);
+
+    /**
+     *
+     * @type {ClassRegistry}
+     */
+    this.classRegistry = new ClassRegistry();
 
 
     this.settings = new EngineSettings();
@@ -127,6 +142,8 @@ Engine.prototype.initialize = function () {
 
     this.localization = new Localization();
     this.localization.setAssetManager(this.assetManager);
+
+    this.help = new HelpManager();
 
     //setup entity component system
     const em = this.entityManager = new EntityManager();
@@ -174,12 +191,31 @@ Engine.prototype.initialize = function () {
      */
     this.gui = new GUIEngine();
 
+    /**
+     *
+     * @type {TutorialManager}
+     */
+    this.tutorial = new TutorialManager();
+    this.tutorial.attachGUI(this.gui);
+    this.tutorial.setLocalization(this.localization);
+
     this.achievements = new AchievementManager();
     this.achievements.initialize({
         assetManager: this.assetManager,
         gateway: new StorageAchievementGateway(this.storage),
         localization: this.localization,
         entityManager: this.entityManager
+    });
+
+    this.story = new StoryManager();
+    this.story.initialize({
+        engine: this
+    });
+
+    this.effects = new EffectManager();
+    this.effects.initialize({
+        entityManager: this.entityManager,
+        assetManager: this.assetManager,
     });
 
     this.sceneManager = new SceneManager(this.entityManager);
@@ -196,6 +232,17 @@ Engine.prototype.initialize = function () {
     };
     this.initializeViews();
 
+    /**
+     *
+     * @type {StaticKnowledgeDatabase}
+     */
+    this.staticKnowledge = new StaticKnowledgeDatabase();
+
+    //Register game systems
+    initializeSystems(this, em, ge, soundEngine, this.assetManager, this.grid, this.devices);
+
+    //init level engine
+    this.initDATGUI();
 
     this.devices.pointer.start();
     this.devices.keyboard.start();
@@ -283,6 +330,76 @@ Engine.prototype.benchmark = function () {
     const elapsed = (t1 - t0) / 1000;
     const rate = (count / elapsed);
     return rate;
+};
+
+Engine.prototype.initDATGUI = function () {
+    const self = this;
+
+    const ge = this.graphics;
+    const fGraphics = gui.addFolder("Graphics");
+    fGraphics.add(ge, "postprocessingEnabled").name("Enable post-processing");
+
+
+    fGraphics.add({
+        fullScreen: function () {
+            launchElementIntoFullscreen(document.documentElement);
+        }
+    }, 'fullScreen');
+    ge.initGUI(fGraphics);
+    //
+    const clock = this.ticker.clock;
+    const fClock = gui.addFolder("Clock");
+    fClock.add(clock, "multiplier", 0, 5, 0.025);
+    fClock.add(clock, "pause");
+    fClock.add(clock, "start");
+    //
+    gui.add(this.sound, "volume", 0, 1, 0.025).name("Sound Volume");
+    //
+
+    const functions = {
+        benchmark: function () {
+            const result = self.benchmark();
+            window.alert("Benchmark result: " + result + " ticks per second.");
+        }
+    };
+    gui.add(functions, "benchmark").name("Run Benchmark");
+    //
+    const scenes = {
+        combat: function () {
+            self.sceneManager.set("combat");
+        },
+        strategy: function () {
+            self.sceneManager.set("strategy");
+        }
+    };
+    gui.add(scenes, "combat").name("Combat Scene");
+    gui.add(scenes, "strategy").name("Strategy Scene");
+
+    const datFileLevel = dat_makeFileField(function setLevelAsCurrent(base64URI) {
+        function success() {
+
+        }
+
+        function failure() {
+            console.error("failed to load level")
+        }
+
+        const sm = self.sceneManager;
+        sm.set("strategy");
+        sm.clear();
+
+        const combatScene = new StrategyScene();
+        combatScene.setup(self, {
+            levelURL: base64URI
+        }, function () {
+            //restore scene
+            success();
+        }, failure);
+    });
+    gui.add(datFileLevel, "load").name("Load level from disk");
+    //
+    let entityManager = this.entityManager;
+    gui.close();
 };
 
 /**
@@ -448,9 +565,16 @@ Engine.prototype.start = function () {
     return Promise.all([
         this.sound.start()
             .then(promiseEntityManager),
+        this.staticKnowledge.load(this.assetManager),
+        this.tutorial.load(this.assetManager),
+        this.help.load(this.assetManager),
         this.gui.startup(this),
         this.achievements.startup(),
+        this.effects.startup(),
+        this.story.startup()
     ]).then(function () {
+        self.tutorial.link();
+
         let frameCount = 0;
         let renderTimeTotal = 0;
 
@@ -490,8 +614,10 @@ Engine.prototype.start = function () {
         }, frameAccumulationTime * 1000);
         //start simulation
         self.ticker.start({ maxTimeout: 200 });
+        //self.uiController.init(self);
+
         //load options
-        self.options.attachToStorage('meep.game.options', self.storage);
+        self.options.attachToStorage('lazykitty.komrade.options', self.storage);
 
         console.log("engine started");
     }, function (e) {

@@ -29,7 +29,7 @@ class GameStateLoader {
     extractState() {
         const em = this.engine.entityManager;
         const dataset = em.dataset;
-        const serializer = new BinaryBufferSerialization(/* serialization registry goes here */);
+        const serializer = new BinaryBufferSerialization();
 
         const state = new EncodingBinaryBuffer();
 

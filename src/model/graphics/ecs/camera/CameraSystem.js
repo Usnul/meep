@@ -277,13 +277,13 @@ export class CameraSystem extends System {
     /**
      *
      * @param {EntityComponentDataset} ecd
-     * @param {function(Camera)} visitor
+     * @param {function(Camera, entity:number)} visitor
      */
     static traverseActiveCameras(ecd, visitor) {
 
-        ecd.traverseComponents(Camera, function (c) {
+        ecd.traverseComponents(Camera, function (c, entity) {
             if (c.active.getValue()) {
-                visitor(c);
+                visitor(c, entity);
             }
         });
     }

@@ -22,6 +22,10 @@ export class BlackboardTrigger {
         return this.trigger.expression;
     }
 
+    /**
+     *
+     * @returns {boolean}
+     */
     isCompiled() {
         return this.trigger !== undefined;
     }
@@ -46,7 +50,7 @@ export class BlackboardTrigger {
             this.compile();
         }
 
-        this.trigger.references.forEach(function (ref) {
+        this.trigger.traverseReferences(function (ref) {
             const value = blackboard.acquire(ref.name, ref.dataType);
 
             ref.connect(value);
@@ -65,7 +69,7 @@ export class BlackboardTrigger {
 
         this.isLinked = false;
 
-        this.trigger.references.forEach(r => {
+        this.trigger.traverseReferences(r => {
             r.disconnect();
 
             blackboard.release(r.name);

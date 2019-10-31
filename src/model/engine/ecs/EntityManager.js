@@ -8,6 +8,7 @@ import { assert } from "../../core/assert.js";
 import { noop } from "../../core/function/Functions.js";
 import { EntityObserver } from "./EntityObserver.js";
 import { computeSystemName } from "./System.js";
+import { IllegalStateException } from "../../core/fsm/exceptions/IllegalStateException.js";
 
 /**
  *
@@ -621,7 +622,7 @@ function validateSystem(system) {
 
 
 /**
- *
+ * If the {@link EntityManager} is already started, the system will be started automatically before being added
  * @param {System} system
  * @return {EntityManager}
  */
@@ -638,6 +639,16 @@ EntityManager.prototype.addSystem = function (system) {
         validateSystem(system);
     } catch (e) {
         console.error(`System validation failed '${computeSystemName(system)}' : `, e, system);
+    }
+
+    //check system state
+    const systemState = system.state.getValue();
+
+    const legalStates = [System.State.INITIAL, System.State.STOPPED];
+
+    if (legalStates.indexOf(systemState) === -1) {
+        //illegal state
+        throw new IllegalStateException(`System must be in one of these states: [${legalStates.join(',')}], instead was ${systemState}`);
     }
 
     const systems = this.systems;
@@ -771,6 +782,13 @@ EntityManager.prototype.stopSystem = function (system, successCallback, errorCal
 EntityManager.prototype.startSystem = function (system, successCallback, errorCallback) {
     assert.equal(typeof system.state, "object", `System(${computeSystemName(system)}) state must be object, was "${typeof system.state}" instead`);
     assert.equal(typeof system.state.set, "function", `System(${computeSystemName(system)}) state doesn't have 'set' method`);
+
+    if (system.state.getValue() === System.State.RUNNING) {
+        //system is already running
+        console.warn(`System '${computeSystemName(system)}' is already running, nothing to do`);
+        successCallback(system);
+        return;
+    }
 
     const self = this;
 

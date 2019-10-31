@@ -3,7 +3,8 @@ import { assert } from "../../../core/assert.js";
 import { noop } from "../../../core/function/Functions.js";
 import List from "../../../core/collection/List.js";
 import EntityBuilder from "../../ecs/EntityBuilder.js";
-import GUIElement from "../../ecs/components/GUIElement.js";
+import GUIElement from "../../ecs/gui/GUIElement.js";
+import { SerializationMetadata } from "../../ecs/components/SerializationMetadata.js";
 
 
 class LogDisplay {
@@ -150,10 +151,13 @@ export class NotificationManager {
 
                 const eb = new EntityBuilder();
 
+                //prevent serialization of the notification
+                eb.add(SerializationMetadata.Transient);
+
                 const em = self.entityManager;
 
                 if (em !== null && em.dataset !== null) {
-                    const guiElement = new GUIElement(view);
+                    const guiElement = GUIElement.fromView(view);
 
                     guiElement.group = grouping;
 

@@ -3,16 +3,16 @@
  * Date: 22/6/2014
  * Time: 22:07
  */
-import { System } from '../System';
-import HeadsUpDisplay from '../components/HeadsUpDisplay';
-import Transform from '../components/Transform';
+import { System } from '../System.js';
+import HeadsUpDisplay from './HeadsUpDisplay.js';
+import Transform from '../components/Transform.js';
 
 import { Matrix4 } from 'three';
 import { GraphicsEngine } from "../../../graphics/GraphicsEngine.js";
 import { FogOfWarVisibilityPredicate } from "../../../level/fow/FogOfWarVisibilityPredicate.js";
 import Vector4 from "../../../core/geom/Vector4.js";
-import ViewportPosition from "../components/ViewportPosition.js";
-import GUIElement from "../components/GUIElement.js";
+import ViewportPosition from "./ViewportPosition.js";
+import GUIElement from "./GUIElement.js";
 
 /**
  *

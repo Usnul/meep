@@ -1,4 +1,5 @@
 import List from "../../../../core/collection/List.js";
+import { assert } from "../../../../core/assert.js";
 
 class InputBinding {
     constructor() {
@@ -20,6 +21,9 @@ class InputBinding {
      * @param {string} event
      */
     set(path, event) {
+        assert.typeOf(path, 'string', path);
+        assert.typeOf(event, 'string', path);
+
         this.path = path;
         this.event = event;
     }
@@ -59,6 +63,9 @@ export class Input {
      * @returns {boolean}
      */
     exists(path, event) {
+        assert.typeOf(path, 'string', path);
+        assert.typeOf(event, 'string', path);
+
         return this.bindings.some(b => b.path === path && b.event === event);
     }
 
@@ -69,6 +76,9 @@ export class Input {
      * @returns {boolean}
      */
     bind(path, event) {
+        assert.typeOf(path, 'string', path);
+        assert.typeOf(event, 'string', path);
+
         if (this.exists(path, event)) {
             //binding exists
             return false;

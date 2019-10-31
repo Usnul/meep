@@ -771,6 +771,157 @@ AABB3.prototype.clone = function () {
  * @param {number} y1
  * @param {number} z1
  */
+export function serializeAABB3Encoded_v0(buffer, box, x0, y0, z0, x1, y1, z1) {
+    let header = 0;
+
+    if (box.x0 === x0) {
+        header |= 1;
+    }
+
+    if (box.x1 === x1) {
+        header |= 2;
+    }
+
+    if (box.y0 === y0) {
+        header |= 4;
+    }
+
+    if (box.y1 === y1) {
+        header |= 8;
+    }
+
+    if (box.z0 === z0) {
+        header |= 16;
+    }
+
+    if (box.z1 === z1) {
+        header |= 32;
+    }
+
+    buffer.writeUint8(header);
+
+    //compute value ranges
+    const xD = x1 - x0;
+    const yD = y1 - y0;
+    const zD = z1 - z0;
+
+    if ((header & 1) === 0) {
+        const _x0 = (((box.x0 - x0) / xD) * 65535) | 0;
+        buffer.writeUint16(_x0);
+    }
+
+    if ((header & 2) === 0) {
+        const _x1 = (((box.x1 - x0) / xD) * 65535) | 0;
+        buffer.writeUint16(_x1);
+    }
+
+    if ((header & 4) === 0) {
+        const _y0 = (((box.y0 - y0) / yD) * 65535) | 0;
+        buffer.writeUint16(_y0);
+    }
+
+    if ((header & 8) === 0) {
+        const _y1 = (((box.y1 - y0) / yD) * 65535) | 0;
+        buffer.writeUint16(_y1);
+    }
+
+    if ((header & 16) === 0) {
+        const _z0 = (((box.z0 - z0) / zD) * 65535) | 0;
+        buffer.writeUint16(_z0);
+    }
+
+    if ((header & 32) === 0) {
+        const _z1 = (((box.z1 - z0) / zD) * 65535) | 0;
+        buffer.writeUint16(_z1);
+    }
+}
+
+
+/**
+ *
+ * @param {BinaryBuffer} buffer
+ * @param {AABB3} box
+ * @param {number} x0
+ * @param {number} y0
+ * @param {number} z0
+ * @param {number} x1
+ * @param {number} y1
+ * @param {number} z1
+ */
+export function deserializeAABB3Encoded_v0(buffer, box, x0, y0, z0, x1, y1, z1) {
+    const header = buffer.readUint8();
+
+    //compute value ranges
+    const xD = x1 - x0;
+    const yD = y1 - y0;
+    const zD = z1 - z0;
+
+
+    let qx0;
+    let qx1;
+
+    let qy0;
+    let qy1;
+
+    let qz0;
+    let qz1;
+
+    if ((header & 1) === 0) {
+        const _x0 = buffer.readUint16();
+        qx0 = (_x0 / 65535) * xD + x0;
+    } else {
+        qx0 = x0;
+    }
+
+    if ((header & 2) === 0) {
+        const _x1 = buffer.readUint16();
+        qx1 = (_x1 / 65535) * xD + x0;
+    } else {
+        qx1 = x1;
+    }
+
+    if ((header & 4) === 0) {
+        const _y0 = buffer.readUint16();
+        qy0 = (_y0 / 65535) * yD + y0;
+    } else {
+        qy0 = y0;
+    }
+
+    if ((header & 8) === 0) {
+        const _y1 = buffer.readUint16();
+        qy1 = (_y1 / 65535) * yD + y0;
+    } else {
+        qy1 = y1;
+    }
+
+    if ((header & 16) === 0) {
+        const _z0 = buffer.readUint16();
+        qz0 = (_z0 / 65535) * zD + z0;
+    } else {
+        qz0 = z0;
+    }
+
+    if ((header & 32) === 0) {
+        const _z1 = buffer.readUint16();
+        qz1 = (_z1 / 65535) * zD + z0;
+    } else {
+        qz1 = z1;
+    }
+
+    box.setBounds(qx0, qy0, qz0, qx1, qy1, qz1);
+}
+
+/**
+ *
+ * @param {BinaryBuffer} buffer
+ * @param {AABB3} box
+ * @param {number} x0
+ * @param {number} y0
+ * @param {number} z0
+ * @param {number} x1
+ * @param {number} y1
+ * @param {number} z1
+ */
 export function serializeAABB3Quantized16Uint(buffer, box, x0, y0, z0, x1, y1, z1) {
     //compute value ranges
     const xD = x1 - x0;

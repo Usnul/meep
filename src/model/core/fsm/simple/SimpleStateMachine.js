@@ -64,14 +64,15 @@ export class SimpleStateMachine {
      *
      * @param {number} state
      * @param {function} handler
+     * @param {*} [thisArg]
      */
-    removeEventHandlerStateEntry(state, handler) {
+    removeEventHandlerStateEntry(state, handler, thisArg) {
         assert.ok(this.description.stateExists(state), `state ${state} doesn't exist`);
 
         const handlers = this.__eventHandlersStateEntry[state];
 
         if (handlers !== undefined) {
-            const i = findSignalHandlerIndexByHandle(handlers, handler);
+            const i = findSignalHandlerIndexByHandle(handlers, handler, thisArg);
 
             if (i !== -1) {
                 handlers.splice(i, 1);

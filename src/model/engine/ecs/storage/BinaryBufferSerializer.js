@@ -1,18 +1,11 @@
 import { SerializationFlags, SerializationMetadata } from "../components/SerializationMetadata.js";
 import { assert } from "../../../core/assert.js";
+import { gameBinarySerializationRegistry } from "../../../game/GameBinarySerializationRegistry.js";
 import { BinaryCollectionSerializer } from "./binary/collection/BinaryCollectionSerializer.js";
+import { COMPONENT_SERIALIZATION_TRANSIENT_FIELD } from "./COMPONENT_SERIALIZATION_TRANSIENT_FIELD.js";
 
-/**
- *
- * @param {BinarySerializationRegistry} registry
- * @constructor
- */
-function BinaryBufferSerialization(registry) {
-    /**
-     *
-     * @type {BinarySerializationRegistry}
-     */
-    this.registry = registry;
+function BinaryBufferSerialization() {
+
 }
 
 /**
@@ -20,12 +13,19 @@ function BinaryBufferSerialization(registry) {
  * @param {number} entity
  * @param {EntityComponentDataset} dataset
  * @param {number} smComponentIndex
+ * @param {Object} componentInstance
  * @returns {boolean}
  */
-function isEntityTransient(entity, dataset, smComponentIndex) {
+function isEntityTransient(entity, dataset, smComponentIndex, componentInstance) {
     if (smComponentIndex === -1) {
         return false;
     }
+
+    //check component instance flag
+    if (componentInstance[COMPONENT_SERIALIZATION_TRANSIENT_FIELD] === true) {
+        return true;
+    }
+
 
     /**
      *
@@ -65,7 +65,7 @@ BinaryBufferSerialization.prototype.process = function (buffer, dataset) {
 
     const collectionSerializer = new BinaryCollectionSerializer();
 
-    collectionSerializer.setRegistry(this.registry);
+    collectionSerializer.setRegistry(gameBinarySerializationRegistry);
     collectionSerializer.setBuffer(buffer);
 
 
@@ -87,7 +87,7 @@ BinaryBufferSerialization.prototype.process = function (buffer, dataset) {
         let lastEntity = 0;
 
         dataset.traverseComponents(componentType, function (componentInstance, entity) {
-            if (isEntityTransient(entity, dataset, smComponentIndex)) {
+            if (isEntityTransient(entity, dataset, smComponentIndex, componentInstance)) {
                 //skip
                 return;
             }

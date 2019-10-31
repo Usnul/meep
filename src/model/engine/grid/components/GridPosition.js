@@ -4,6 +4,7 @@
 
 import Vector2 from '../../../core/geom/Vector2';
 import { BinaryClassSerializationAdapter } from "../../ecs/storage/binary/BinaryClassSerializationAdapter.js";
+import { BinaryClassUpgrader } from "../../ecs/storage/binary/BinaryClassUpgrader.js";
 
 /**
  * @extends {Vector2}
@@ -62,12 +63,12 @@ GridPosition.prototype.clone = function () {
 
 export default GridPosition;
 
-export class GridPositionSerializationAdapter extends BinaryClassSerializationAdapter{
-    constructor(){
+export class GridPositionSerializationAdapter extends BinaryClassSerializationAdapter {
+    constructor() {
         super();
 
         this.klass = GridPosition;
-        this.version = 0;
+        this.version = 1;
     }
 
     /**
@@ -76,7 +77,24 @@ export class GridPositionSerializationAdapter extends BinaryClassSerializationAd
      * @param {GridPosition} value
      */
     serialize(buffer, value) {
-        Vector2.prototype.toBinaryBuffer.call(value, buffer);
+        const x = value.x;
+        const y = value.y;
+
+        let header = 0;
+        if (Number.isInteger(x) && Number.isInteger(y) && x >= 0 && y >= 0) {
+            header = 1;
+        }
+
+        buffer.writeUint8(header);
+
+        if (header === 1) {
+            //both components are uint
+            buffer.writeUintVar(x);
+            buffer.writeUintVar(y);
+        } else {
+            buffer.writeFloat32(x);
+            buffer.writeFloat32(y);
+        }
     }
 
     /**
@@ -85,6 +103,49 @@ export class GridPositionSerializationAdapter extends BinaryClassSerializationAd
      * @param {GridPosition} value
      */
     deserialize(buffer, value) {
-        Vector2.prototype.fromBinaryBuffer.call(value, buffer);
+        const header = buffer.readUint8();
+
+        let x = 0, y = 0;
+        if (header === 1) {
+            x = buffer.readUintVar();
+            y = buffer.readUintVar();
+        } else {
+            //float
+            x = buffer.readFloat32();
+            y = buffer.readFloat32();
+        }
+
+        value.set(x, y);
+    }
+}
+
+export class GridPositionSerializationUpdater_0_1 extends BinaryClassUpgrader {
+    constructor() {
+        super();
+
+        this.__targetVersion = 1;
+        this.__startVersion = 0;
+    }
+
+    upgrade(source, target) {
+        const x = source.readFloat64();
+        const y = source.readFloat64();
+
+        let header = 0;
+        if (Number.isInteger(x) && Number.isInteger(y) && x >= 0 && y >= 0) {
+            header = 1;
+        }
+
+        target.writeUint8(header);
+
+        if (header === 1) {
+            //both components are uint
+            target.writeUintVar(x);
+            target.writeUintVar(y);
+        } else {
+            target.writeFloat32(x);
+            target.writeFloat32(y);
+        }
+
     }
 }

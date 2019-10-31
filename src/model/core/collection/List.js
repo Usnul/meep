@@ -57,7 +57,7 @@ List.prototype.set = function (index, value) {
     const oldValue = this.data[index];
 
     if (oldValue !== undefined) {
-        this.on.removed.dispatch(oldValue, index)
+        this.on.removed.send2(oldValue, index)
     } else {
         if (index >= this.length) {
 
@@ -72,7 +72,7 @@ List.prototype.set = function (index, value) {
 
     this.data[index] = value;
 
-    this.on.added.dispatch(value, index);
+    this.on.added.send2(value, index);
 };
 
 /**
@@ -85,7 +85,7 @@ List.prototype.add = function (el) {
 
     this.length++;
 
-    this.on.added.dispatch(el, oldLength);
+    this.on.added.send2(el, oldLength);
     return this;
 };
 
@@ -107,7 +107,7 @@ List.prototype.insert = function (index, el) {
 
     this.length++;
 
-    this.on.added.dispatch(el, index);
+    this.on.added.send2(el, index);
 
     return this;
 };
@@ -139,12 +139,12 @@ List.prototype.crop = function (startIndex, endIndex) {
         let i;
 
         for (i = 0; i < headLength; i++) {
-            onRemoved.dispatch(head[i], i);
+            onRemoved.send2(head[i], i);
         }
 
 
         for (i = 0; i < tailLength; i++) {
-            onRemoved.dispatch(tail[i], endIndex + i);
+            onRemoved.send2(tail[i], endIndex + i);
         }
     }
 
@@ -166,7 +166,7 @@ List.prototype.addAll = function (elements) {
         for (let i = 0; i < addedElementsCount; i++) {
             const element = elements[i];
             this.data.push(element);
-            added.dispatch(element, this.length++);
+            added.send2(element, this.length++);
         }
     } else {
         //no observers, we can add elements faster
@@ -211,7 +211,7 @@ List.prototype.removeMany = function (index, removeCount) {
         for (let i = 0; i < removedCount; i++) {
             const element = els[i];
 
-            this.on.removed.dispatch(element, index + i);
+            this.on.removed.send2(element, index + i);
         }
     }
 
@@ -235,7 +235,7 @@ List.prototype.remove = function (index) {
 
     const element = els[0];
 
-    this.on.removed.dispatch(element, index);
+    this.on.removed.send2(element, index);
 
     return element;
 };

@@ -82,7 +82,10 @@ class GridObstacle {
 
                 index++;
 
-                visitor.call(thisArg, j + offsetX, i + offsetY, value, index);
+                if (visitor.call(thisArg, j + offsetX, i + offsetY, value, index) === false) {
+                    //stop traversal
+                    return;
+                }
 
             }
 
@@ -123,6 +126,62 @@ class GridObstacle {
         return x >= 0 && x < sX && y >= 0 && y < sY;
     }
 
+    /**
+     *
+     * @param {number} x Obstacle-Local X position
+     * @param {number} y Obstacle-Local Y position
+     * @param {number[]} adjacencyMask Mask that defines adjacency, contains pairs of number for each X,Y coordinate offset from obstacle point
+     * @returns {boolean}
+     */
+    isPointAdjacent(x, y, adjacencyMask) {
+        assert.typeOf(x, 'number', 'x');
+        assert.typeOf(y, 'number', 'y');
+
+        assert.notEqual(adjacencyMask, undefined, 'mask is undefined');
+        assert.notEqual(adjacencyMask, null, 'mask is null');
+
+        const size = this.size;
+
+        const sX = size.x;
+        const sY = size.y;
+
+        const data = this.data;
+
+        const maskLength = adjacencyMask.length;
+
+        assert.typeOf(maskLength, 'number', 'maskLength');
+
+
+        for (let k = 0; k < maskLength; k += 2) {
+            const offsetX = adjacencyMask[k];
+            const offsetY = adjacencyMask[k + 1];
+
+            //reconstruct origin point within the grid
+            const aY = y - offsetY;
+            const aX = x - offsetX;
+
+            if (aX < 0 || aX >= sX || aY < 0 || aY >= sY) {
+                //origin point is outside of bounds
+                continue;
+            }
+
+            const index = aY * sX + aX;
+
+            const value = data[index];
+
+            if (value === 0) {
+                //non-obstructing
+                continue;
+            }
+
+            //found a matching adjacent point
+            return true;
+        }
+
+        //no matches
+        return false;
+    }
+
     toJSON() {
         return {
             size: this.size.toJSON(),
@@ -152,14 +211,35 @@ class GridObstacle {
             computeHashIntegerArray.apply(null, this.data)
         );
     }
+
+    /**
+     *
+     * @param {GridObstacle} other
+     * @returns {boolean}
+     */
+    equals(other) {
+        if (!this.size.equals(other.size)) {
+            return false;
+        }
+
+        const dataSize = this.size.x * this.size.y;
+
+        for (let i = 0; i < dataSize; i++) {
+            if (this.data[i] !== other.data[i]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
 
 GridObstacle.typeName = "GridObstacle";
 
 export default GridObstacle;
 
-export class GridObstacleSerializationAdapter extends BinaryClassSerializationAdapter{
-    constructor(){
+export class GridObstacleSerializationAdapter extends BinaryClassSerializationAdapter {
+    constructor() {
         super();
 
         this.klass = GridObstacle;

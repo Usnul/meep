@@ -4,7 +4,7 @@
  */
 export class TacticalModule {
     /**
-     *
+     * @template RT
      * @param {Resource<RT>[]} resources
      * @returns {Promise<ResourceAllocationBid[]>}
      */

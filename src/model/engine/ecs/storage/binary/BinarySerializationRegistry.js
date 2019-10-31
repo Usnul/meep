@@ -90,6 +90,15 @@ export class BinarySerializationRegistry {
      * @returns {boolean}
      */
     registerUpgrader(className, upgrader) {
+
+        if (upgrader.getStartVersion() === upgrader.getTargetVersion()) {
+            throw new Error(`Upgrader for '${className}' start(=${upgrader.getStartVersion()}) and target(=${upgrader.getTargetVersion()}) versions are the same, must be different`);
+        }
+
+        if (upgrader.getStartVersion() > upgrader.getTargetVersion()) {
+            console.warn(`Possible error in '${className}' upgrader code, target version(=${upgrader.getTargetVersion()}) < start version(=${upgrader.getStartVersion()})`);
+        }
+
         let classUpgraders = this.upgraders.get(className);
 
         if (classUpgraders === undefined) {

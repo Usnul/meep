@@ -276,6 +276,15 @@ ParameterLookupTable.prototype.addValue = function (position, value) {
         throw new Error(`Cannot add value, WriteMode disabled`);
     }
 
+    //insert operation cannot be done on a TypedArray, so we need to make sure we are working with dynamic array
+    if (!Array.isArray(this.positions)) {
+        this.positions = Array.from(this.positions);
+    }
+
+    if (!Array.isArray(this.data)) {
+        this.data = Array.from(this.data);
+    }
+
     //find a place to insert the value at
     const positions = this.positions;
     const numValues = positions.length;
@@ -288,6 +297,7 @@ ParameterLookupTable.prototype.addValue = function (position, value) {
             break;
         }
     }
+
 
     //insert value
     positions.splice(i, 0, position);

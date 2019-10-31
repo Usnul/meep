@@ -2,14 +2,14 @@
  * Created by Alex on 09/02/2015.
  */
 
-import { System } from '../System';
-import GUIElement from '../components/GUIElement';
+import { System } from '../System.js';
+import GUIElement, { GUIElementFlag } from './GUIElement.js';
 import EmptyView from "../../../../view/ui/elements/EmptyView.js";
 import domify from "../../../../view/DOM.js";
 import View from "../../../../view/View.js";
 
 /**
- * @this {{el:GUIElement, system:GUIElementSystem}}
+ * @this {{el:GUIElement, system:GUIElementSystem, entity: number}}
  * @param {boolean} v
  */
 function handleComponentVisibilityChange(v) {
@@ -22,10 +22,15 @@ function handleComponentVisibilityChange(v) {
      */
     const component = this.el;
 
+    /**
+     * @type {number}
+     */
+    const entity = this.entity;
+
     if (v) {
-        system.attachComponent(component);
+        system.attachComponent(component, entity);
     } else {
-        system.detachComponent(component);
+        system.detachComponent(component, entity);
     }
 }
 
@@ -33,9 +38,10 @@ class GUIElementSystem extends System {
     /**
      *
      * @param {View} containerView
+     * @param {Engine} engine
      * @constructor
      */
-    constructor(containerView) {
+    constructor(containerView, engine) {
         if (containerView === undefined) {
             throw  new Error(`mandatory parameter containerView is undefined`);
         }
@@ -46,6 +52,10 @@ class GUIElementSystem extends System {
 
         if (!(containerView instanceof View)) {
             throw new TypeError(`mandatory parameter containerView is not an instance of View`);
+        }
+
+        if (engine === undefined) {
+            throw new Error('mandatory parameter engine is undefined');
         }
 
 
@@ -68,6 +78,17 @@ class GUIElementSystem extends System {
             });
 
         this.componentClass = GUIElement;
+
+        /**
+         * @type {ClassRegistry}
+         */
+        this.classRegistry = engine.classRegistry;
+
+        /**
+         *
+         * @type {Engine}
+         */
+        this.engine = engine;
 
         /**
          *
@@ -99,8 +120,30 @@ class GUIElementSystem extends System {
     /**
      *
      * @param {GUIElement} component
+     * @param {number} entity
      */
-    attachComponent(component) {
+    attachComponent(component, entity) {
+
+        //initialize view
+        if (component.getFlag(GUIElementFlag.Managed) && !component.getFlag(GUIElementFlag.Initialized)) {
+            //managed, but not initialized
+
+            if (component.view.isViewEntity) {
+                /**
+                 *
+                 * @type {ViewEntity}
+                 */
+                const view = component.view;
+
+                view.initialize(component.parameters, entity, this.entityManager.dataset, this.engine);
+
+                component.setFlag(GUIElementFlag.Initialized);
+
+            } else {
+                console.warn(`component.view is not an instance of ViewEntity, cannot initialize`, component.view);
+            }
+
+        }
 
         let parent;
 
@@ -132,8 +175,9 @@ class GUIElementSystem extends System {
     /**
      *
      * @param {GUIElement} component
+     * @param {number} entity
      */
-    detachComponent(component) {
+    detachComponent(component, entity) {
 
         const componentGroupId = component.group;
 
@@ -159,14 +203,47 @@ class GUIElementSystem extends System {
      * @param entity
      */
     link(component, entity) {
-        component.visible.onChanged.add(handleComponentVisibilityChange, {
-            el: component,
-            system: this
-        });
+        if (component.view === null) {
+            //component view is not initialized
+
+            if (!component.getFlag(GUIElementFlag.Managed)) {
+                console.error(`Element for entity '${entity}' does not have a view. Cannot create a view because Element is not Managed`);
+            } else {
+
+                /**
+                 *
+                 * @type {Class<ViewEntity>}
+                 */
+                const ViewKlass = this.classRegistry.getClass(component.klass);
+
+                if (ViewKlass === undefined) {
+                    console.error(`Class '${component.klass}' not found in registry. Failed to instanciate view for entity '${entity}'. Using empty view`);
+
+                    component.view = new EmptyView();
+                } else {
+
+                    /**
+                     *
+                     * @type {ViewEntity}
+                     */
+                    const view = new ViewKlass();
+
+
+                    component.view = view;
+                }
+            }
+        }
+
 
         if (component.visible.getValue()) {
-            this.attachComponent(component);
+            this.attachComponent(component, entity);
         }
+
+        component.visible.onChanged.add(handleComponentVisibilityChange, {
+            el: component,
+            system: this,
+            entity
+        });
     }
 
     /**
@@ -178,7 +255,15 @@ class GUIElementSystem extends System {
         component.visible.onChanged.remove(handleComponentVisibilityChange);
 
         if (component.visible.getValue()) {
-            this.detachComponent(component);
+            this.detachComponent(component, entity);
+        }
+
+        if (component.getFlag(GUIElementFlag.Managed) && component.getFlag(GUIElementFlag.Initialized)) {
+            //managed and initialized, need to finalize
+            component.view.finalize();
+
+            //clear initialization flag
+            component.clearFlag(GUIElementFlag.Initialized);
         }
     }
 }

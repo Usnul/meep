@@ -33,8 +33,6 @@ import { EncodingBinaryBuffer } from "../core/binary/EncodingBinaryBuffer.js";
 import { EntityComponentDataset } from "../engine/ecs/EntityComponentDataset.js";
 import { resetMusicTracks } from "../../view/ui/game/options/OptionsView.js";
 
-const meshLibraryList = [];
-
 /**
  *
  * @param {ProcessEngine} processEngine
@@ -382,7 +380,7 @@ function Editor() {
             // Set music tracks back to time=0
             resetMusicTracks(dataset);
 
-            const serializer = new BinaryBufferSerialization(/* serialization registry goes here */);
+            const serializer = new BinaryBufferSerialization();
 
             const state = new EncodingBinaryBuffer();
 
@@ -509,12 +507,6 @@ Editor.prototype.initialize = function () {
     this.processEngine.initialize(this);
     this.view = new EditorView(this);
 
-    const meshLibrary = this.meshLibrary;
-
-    meshLibraryList.forEach(function (url) {
-        meshLibrary.add(url);
-    });
-
     this.copyBuffer = [];
 
     this.disabledSystems = [];
@@ -577,7 +569,6 @@ Editor.prototype.attach = function (engine) {
 
     //attach EditorEntity system
     engine.entityManager.addSystem(this.editorEntitySystem);
-    engine.entityManager.startSystem(this.editorEntitySystem, console.log, console.error);
 
     const dataset = engine.entityManager.dataset;
 
@@ -603,12 +594,24 @@ Editor.prototype.attach = function (engine) {
 
 };
 
+/**
+ *
+ * @param {string} name
+ */
 Editor.prototype.disableSystem = function (name) {
     const entityManager = this.engine.entityManager;
     const componentClass = entityManager.getComponentClassByName(name);
+
+    if (componentClass === null) {
+        //doesn't exist, nothing to disable
+        return;
+    }
+
     const system = entityManager.getSystemByComponentClass(componentClass);
     const originalState = system.enabled.get();
     system.enabled.set(false);
+
+    //remember disabled system
     this.disabledSystems.push({
         name: name,
         originalState: originalState,

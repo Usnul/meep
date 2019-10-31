@@ -67,6 +67,11 @@ Vector2.right = Object.freeze(new Vector2(1, 0));
  * @type {Vector2}
  */
 Vector2.zero = Object.freeze(new Vector2(0, 0));
+/**
+ * @readonly
+ * @type {Vector2}
+ */
+Vector2.one = Object.freeze(new Vector2(1, 1));
 
 /**
  * @readonly

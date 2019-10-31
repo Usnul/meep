@@ -69,7 +69,7 @@ class TargetAISystem extends System {
                 const tags = picker.tags;
                 //find a new nearest target
                 em.traverseEntities([Tag, Transform], function (tag, transform, entity) {
-                    if (tags.indexOf(tag.name) < 0) {
+                    if (!tag.containsOneOf(tags)) {
                         //not a tag we care about
                         return;
                     }

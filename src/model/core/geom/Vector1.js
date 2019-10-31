@@ -4,7 +4,7 @@
  */
 
 import Signal from "../events/signal/Signal.js";
-import { clamp } from "../math/MathUtils";
+import { clamp, computeHashFloat } from "../math/MathUtils";
 import { assert } from "../assert.js";
 
 
@@ -167,6 +167,13 @@ Vector1.prototype.clone = function () {
  */
 Vector1.prototype.equals = function (other) {
     return this.x === other.x;
+};
+
+/**
+ * @returns {number}
+ */
+Vector1.prototype.hash = function () {
+    return computeHashFloat(this.x);
 };
 
 /**

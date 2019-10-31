@@ -8,6 +8,7 @@ import { Frustum } from "three";
 import { ParticleEmitterFlag } from "../particular/engine/emitter/ParticleEmitterFlag.js";
 import { RenderPassType } from "../../render/RenderPassType.js";
 import { ParticleEmitterLibrary } from "../ParticleEmitterLibrary.js";
+import { GameAssetType } from "../../../engine/asset/GameAssetType.js";
 
 const frustum = new Frustum();
 
@@ -79,12 +80,13 @@ export class ParticleEmitterSystem2 extends System {
     }
 
     updateAwakeSetFromCamera(camera) {
-        //put all awake emitters to sleep
         const awakeSet = this.awakeSet;
 
+        //put all awake emitters to sleep
         awakeSet.forEach(putEmitterToSleep);
 
-        awakeSet.length = 0;
+        //clear the awake set
+        awakeSet.splice(0, awakeSet.length);
 
         frustumFromCamera(camera, frustum);
 
@@ -194,7 +196,15 @@ export class ParticleEmitterSystem2 extends System {
 
         graphicsEngine.on.preRender.add(preRenderHook);
 
-        readyCallback();
+        const library = this.library;
+
+        this.assetManager.promise('data/database/particles/data.json', GameAssetType.JSON)
+            .then(asset => {
+                const particleSet = asset.create();
+
+                return library.load(particleSet);
+            })
+            .then(readyCallback, errorCallback);
     }
 
     shutdown(entityManager, readyCallback, errorCallback) {

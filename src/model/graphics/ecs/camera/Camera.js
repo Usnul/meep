@@ -110,11 +110,11 @@ Camera.projectRay = (function () {
         assert.equal(typeof x, "number");
         assert.equal(typeof y, "number");
 
-        assert.ok(x >= -1, `X(=${x}) must be greater than or equal to -1.0, not a clip-space coordinate`);
-        assert.ok(x <= 1, `X(=${x}) must be less than or equal to 1.0, not a clip-space coordinate`);
+        // assert.ok(x >= -1, `X(=${x}) must be greater than or equal to -1.0, not a clip-space coordinate`);
+        // assert.ok(x <= 1, `X(=${x}) must be less than or equal to 1.0, not a clip-space coordinate`);
 
-        assert.ok(y >= -1, `Y(=${y}) must be greater than or equal to -1.0, not a clip-space coordinate`);
-        assert.ok(y <= 1, `Y(=${y}) must be less than or equal to 1.0, not a clip-space coordinate`);
+        // assert.ok(y >= -1, `Y(=${y}) must be greater than or equal to -1.0, not a clip-space coordinate`);
+        // assert.ok(y <= 1, `Y(=${y}) must be less than or equal to 1.0, not a clip-space coordinate`);
 
         source.copy(camera.position);
         v3.set(x, y, 0.5);

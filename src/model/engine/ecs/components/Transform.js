@@ -5,10 +5,11 @@
 import Vector3 from "../../../core/geom/Vector3";
 import Quaternion from "../../../core/geom/Quaternion";
 import { BinaryClassSerializationAdapter } from "../storage/binary/BinaryClassSerializationAdapter.js";
+import { BinaryClassUpgrader } from "../storage/binary/BinaryClassUpgrader.js";
 
 const delta = new Vector3();
 
-class Transform {
+export class Transform {
     /**
      *
      * @param options
@@ -165,7 +166,7 @@ export class TransformSerializationAdapter extends BinaryClassSerializationAdapt
         super();
 
         this.klass = Transform;
-        this.version = 0;
+        this.version = 1;
     }
 
     /**
@@ -174,9 +175,20 @@ export class TransformSerializationAdapter extends BinaryClassSerializationAdapt
      * @param {Transform} value
      */
     serialize(buffer, value) {
-        value.position.toBinaryBuffer(buffer);
-        buffer.writeUint32(value.rotation.encodeToUint32());
-        value.scale.toBinaryBufferFloat32(buffer);
+
+        const positionX = value.position.x;
+        const positionY = value.position.y;
+        const positionZ = value.position.z;
+
+        const encodedRotation = value.rotation.encodeToUint32();
+
+        buffer.writeFloat64(positionX);
+        buffer.writeFloat64(positionY);
+        buffer.writeFloat64(positionZ);
+
+        buffer.writeUint32(encodedRotation);
+
+        value.scale.toBinaryBufferFloat32_EqualityEncoded(buffer);
     }
 
     /**
@@ -185,8 +197,84 @@ export class TransformSerializationAdapter extends BinaryClassSerializationAdapt
      * @param {Transform} value
      */
     deserialize(buffer, value) {
-        value.position.fromBinaryBuffer(buffer);
-        value.rotation.decodeFromUint32(buffer.readUint32());
-        value.scale.fromBinaryBufferFloat32(buffer);
+        const positionX = buffer.readFloat64();
+        const positionY = buffer.readFloat64();
+        const positionZ = buffer.readFloat64();
+
+        const encodedRotation = buffer.readUint32();
+
+        value.scale.fromBinaryBufferFloat32_EqualityEncoded(buffer);
+
+        value.position.set(positionX, positionY, positionZ);
+
+        value.rotation.decodeFromUint32(encodedRotation);
+    }
+}
+
+export class TransformSerializationUpgrader_0_1 extends BinaryClassUpgrader {
+    constructor() {
+        super();
+
+        this.__startVersion = 0;
+        this.__targetVersion = 1;
+    }
+
+    upgrade(source, target) {
+
+        const positionX = source.readFloat64();
+        const positionY = source.readFloat64();
+        const positionZ = source.readFloat64();
+
+        const encodedRotation = source.readUint32();
+
+        const scaleX = source.readFloat32();
+        const scaleY = source.readFloat32();
+        const scaleZ = source.readFloat32();
+
+
+        //
+        target.writeFloat64(positionX);
+        target.writeFloat64(positionY);
+        target.writeFloat64(positionZ);
+
+        target.writeUint32(encodedRotation);
+
+        let scaleHeader = 0;
+
+        if (scaleX === scaleY) {
+            scaleHeader |= 1;
+        }
+
+        if (scaleY === scaleZ) {
+            scaleHeader |= 2;
+        }
+
+        if (scaleX === scaleZ) {
+            scaleHeader |= 4;
+        }
+
+        target.writeUint8(scaleHeader);
+
+        if ((scaleHeader & 7) === 7) {
+            //all scale components are the same
+            target.writeFloat32(scaleX);
+        } else if (scaleHeader === 1) {
+            //X and Y are the same, Z is different
+            target.writeFloat32(scaleX);
+            target.writeFloat32(scaleZ);
+        } else if (scaleHeader === 2) {
+            //Y and Z are the same, X is different
+            target.writeFloat32(scaleX);
+            target.writeFloat32(scaleY);
+        } else if (scaleHeader === 4) {
+            //X and Z are the same, Y is different
+            target.writeFloat32(scaleX);
+            target.writeFloat32(scaleY);
+        } else {
+            //scale components are different
+            target.writeFloat32(scaleX);
+            target.writeFloat32(scaleY);
+            target.writeFloat32(scaleZ);
+        }
     }
 }

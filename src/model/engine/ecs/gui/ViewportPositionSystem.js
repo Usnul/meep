@@ -1,9 +1,9 @@
 /**
  * Created by Alex on 28/01/2015.
  */
-import { System } from '../System';
-import ViewportPosition from '../components/ViewportPosition';
-import GUIElement from "../components/GUIElement.js";
+import { System } from '../System.js';
+import ViewportPosition from './ViewportPosition.js';
+import GUIElement from "./GUIElement.js";
 import { assert } from "../../../core/assert.js";
 import Vector2 from "../../../core/geom/Vector2.js";
 import { SignalBinding } from "../../../core/events/signal/SignalBinding.js";

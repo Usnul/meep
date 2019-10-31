@@ -79,6 +79,7 @@ class TileGrid {
      * @param {Vector2} result
      * @param {number} w
      * @param {number} h
+     * @returns {boolean}
      */
     findEmptySlotFor(result, w, h) {
         let found = false;

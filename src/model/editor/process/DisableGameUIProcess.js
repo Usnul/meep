@@ -1,5 +1,5 @@
 import { Process } from "./Process.js";
-import GUIElement from "../../engine/ecs/components/GUIElement.js";
+import GUIElement from "../../engine/ecs/gui/GUIElement.js";
 
 class DisableGameUIProcess extends Process {
 

@@ -3,18 +3,10 @@ import Task from "../../../core/process/task/Task.js";
 import TaskSignal from "../../../core/process/task/TaskSignal.js";
 import { assert } from "../../../core/assert.js";
 import { BinaryCollectionDeSerializer } from "./binary/collection/BinaryCollectionDeSerializer.js";
+import { gameBinarySerializationRegistry } from "../../../game/GameBinarySerializationRegistry.js";
 
-/**
- *
- * @param {BinarySerializationRegistry} registry
- * @constructor
- */
-function BinaryBufferDeSerializer(registry) {
-    /**
-     *
-     * @type {BinarySerializationRegistry}
-     */
-    this.registry = registry;
+function BinaryBufferDeSerializer() {
+
 }
 
 /**
@@ -22,11 +14,10 @@ function BinaryBufferDeSerializer(registry) {
  * @param {number} numSerializedTypes
  * @param {BinaryBuffer} buffer
  * @param {EntityManager} entityManager
- * @param {BinarySerializationRegistry} registry
+ * @param {EntityComponentDataset} dataset
  * @returns {Task}
  */
-function deserializeTask(numSerializedTypes, buffer, entityManager, registry) {
-    const dataset = entityManager.dataset;
+function deserializeTask(numSerializedTypes, buffer, entityManager, dataset) {
 
     let typesDecoded = 0;
 
@@ -36,7 +27,7 @@ function deserializeTask(numSerializedTypes, buffer, entityManager, registry) {
     const collectionDeSerializer = new BinaryCollectionDeSerializer();
 
     collectionDeSerializer.setBuffer(buffer);
-    collectionDeSerializer.setRegistry(registry);
+    collectionDeSerializer.setRegistry(gameBinarySerializationRegistry);
 
     let entity = 0;
 
@@ -143,9 +134,14 @@ function deserializeTask(numSerializedTypes, buffer, entityManager, registry) {
  *
  * @param {BinaryBuffer} buffer
  * @param {EntityManager} entityManager
+ * @param {EntityComponentDataset} dataset
  * @returns {Task}
  */
-BinaryBufferDeSerializer.prototype.process = function (buffer, entityManager) {
+BinaryBufferDeSerializer.prototype.process = function (buffer, entityManager, dataset) {
+    assert.notEqual(buffer, undefined, 'buffer is undefined');
+    assert.notEqual(entityManager, undefined, 'entityManager is undefined');
+    assert.notEqual(dataset, undefined, 'dataset is undefined');
+
     const numSerializedTypes = buffer.readUint32();
 
     let task;
@@ -153,7 +149,7 @@ BinaryBufferDeSerializer.prototype.process = function (buffer, entityManager) {
         //return NO-OP equivalent of a task
         task = emptyTask();
     } else {
-        task = deserializeTask(numSerializedTypes, buffer, entityManager, this.registry);
+        task = deserializeTask(numSerializedTypes, buffer, entityManager, dataset);
     }
 
     task.on.completed.add(function () {

@@ -1,4 +1,5 @@
 import { assert } from "../../../core/assert.js";
+import { ActionSequence } from "./ActionSequence.js";
 
 /**
  * @template A
@@ -29,9 +30,10 @@ export class ResourceAllocationBid {
 
         /**
          * Represents action
-         * @type {A[]}
+         * @readonly
+         * @type {ActionSequence<A>}
          */
-        this.actions = [];
+        this.actions = new ActionSequence();
 
         /**
          * Weight assigned to the bid, this is dictated externally
