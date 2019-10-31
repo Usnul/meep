@@ -214,17 +214,6 @@ Engine.prototype.initialize = function () {
         entityManager: this.entityManager
     });
 
-    this.story = new StoryManager();
-    this.story.initialize({
-        engine: this
-    });
-
-    this.effects = new EffectManager();
-    this.effects.initialize({
-        entityManager: this.entityManager,
-        assetManager: this.assetManager,
-    });
-
     this.sceneManager = new SceneManager(this.entityManager);
     this.ticker = new Ticker(em);
     this.ticker.subscribe(timeDelta => this.entityManager.simulate(timeDelta));

@@ -70,12 +70,6 @@ export class ParticleEmitterSystem2 extends System {
          */
         this.bvh = null;
 
-        /**
-         *
-         * @type {ParticleEmitterLibrary}
-         */
-        this.library = new ParticleEmitterLibrary(assetManager);
-
         this.__handlers = [];
     }
 
@@ -195,16 +189,6 @@ export class ParticleEmitterSystem2 extends System {
         }
 
         graphicsEngine.on.preRender.add(preRenderHook);
-
-        const library = this.library;
-
-        this.assetManager.promise('data/database/particles/data.json', GameAssetType.JSON)
-            .then(asset => {
-                const particleSet = asset.create();
-
-                return library.load(particleSet);
-            })
-            .then(readyCallback, errorCallback);
     }
 
     shutdown(entityManager, readyCallback, errorCallback) {
