@@ -5,7 +5,7 @@ import { FogOfWar } from "./FogOfWar.js";
 import Transform from "../../engine/ecs/components/Transform.js";
 import Vector2 from "../../core/geom/Vector2.js";
 import { obtainTerrain } from "../terrain/ecs/Terrain.js";
-import Team from "../../../extra/ecs/team/Team.js";
+import { Team } from "../../../extra/ecs/team/Team.js";
 
 const v2 = new Vector2();
 

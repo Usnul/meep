@@ -32,7 +32,6 @@ import Vector1 from "../core/geom/Vector1.js";
 import { ViewStack } from "../../view/ui/elements/navigation/ViewStack.js";
 import EmptyView from "../../view/ui/elements/EmptyView.js";
 import { assert } from "../core/assert.js";
-import { makeEngineOptionsModel } from "../../view/ui/game/options/OptionsView.js";
 import Ticker from "./simulation/Ticker.js";
 import { Localization } from "../core/Localization.js";
 import { IndexedDBStorage } from "./save/storage/IndexedDBStorage.js";
@@ -100,7 +99,7 @@ Engine.prototype.initialize = function () {
      *
      * @type {OptionGroup}
      */
-    this.options = makeEngineOptionsModel(this);
+    this.options = new OptionGroup();
 
     /**
      *
