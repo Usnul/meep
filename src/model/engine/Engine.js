@@ -454,11 +454,16 @@ Engine.prototype.start = function () {
         });
     }
 
+    const pSoundStarted = this.sound.start()
+        .then(promiseEntityManager);
+
+    const pGuiStarted = this.gui.startup(this);
+    const pAchievementsStarted = this.achievements.startup();
+
     return Promise.all([
-        this.sound.start()
-            .then(promiseEntityManager),
-        this.gui.startup(this),
-        this.achievements.startup()
+        pSoundStarted,
+        pGuiStarted,
+        pAchievementsStarted
     ]).then(function () {
         let frameCount = 0;
         let renderTimeTotal = 0;

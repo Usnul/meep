@@ -47,6 +47,7 @@ import { InputSystem } from "../model/engine/input/ecs/systems/InputSystem.js";
 import { AttachmentSocketsSystem } from "../model/engine/ecs/sockets/AttachmentSocketsSystem.js";
 import { AttachmentSystem } from "../model/engine/ecs/attachment/AttachmentSystem.js";
 import { TeamSystem } from "../extra/ecs/team/TeamSystem.js";
+import InputControllerSystem from "../model/engine/input/ecs/systems/InputControllerSystem.js";
 
 /**
  *
@@ -67,7 +68,7 @@ function initializeSystems(
     grid,
     devices
 ) {
-    const guiSystem = new GUIElementSystem(engine.gui.view);
+    const guiSystem = new GUIElementSystem(engine.gui.view, engine);
     const headsUpDisplaySystem = new HeadsUpDisplaySystem(graphics);
 
     entityManager
@@ -103,6 +104,7 @@ function initializeSystems(
         .addSystem(new GridObstacleSystem(grid))
         .addSystem(new GridPositionSystem())
         .addSystem(new InputSystem(devices))
+        .addSystem(new InputControllerSystem(devices))
         .addSystem(new HighlightSystem(graphics))
         .addSystem(new LightSystem(graphics.scene, {
             shadowResolution: 1024

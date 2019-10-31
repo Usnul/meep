@@ -7,8 +7,6 @@ import { frustumFromCamera } from "../../ecs/camera/CameraSystem.js";
 import { Frustum } from "three";
 import { ParticleEmitterFlag } from "../particular/engine/emitter/ParticleEmitterFlag.js";
 import { RenderPassType } from "../../render/RenderPassType.js";
-import { ParticleEmitterLibrary } from "../ParticleEmitterLibrary.js";
-import { GameAssetType } from "../../../engine/asset/GameAssetType.js";
 
 const frustum = new Frustum();
 
@@ -189,6 +187,8 @@ export class ParticleEmitterSystem2 extends System {
         }
 
         graphicsEngine.on.preRender.add(preRenderHook);
+
+        readyCallback();
     }
 
     shutdown(entityManager, readyCallback, errorCallback) {
