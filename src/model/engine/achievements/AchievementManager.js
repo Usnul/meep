@@ -389,9 +389,6 @@ export class AchievementManager {
     }
 
     async startup() {
-        //load achievement definitions
-        await this.loadDefinitions(this.assetManager);
-
         this.initializeGateway();
 
         this.isStarted.set(true);
