@@ -1,11 +1,21 @@
 import { SerializationFlags, SerializationMetadata } from "../components/SerializationMetadata.js";
 import { assert } from "../../../core/assert.js";
-import { gameBinarySerializationRegistry } from "../../../game/GameBinarySerializationRegistry.js";
 import { BinaryCollectionSerializer } from "./binary/collection/BinaryCollectionSerializer.js";
 import { COMPONENT_SERIALIZATION_TRANSIENT_FIELD } from "./COMPONENT_SERIALIZATION_TRANSIENT_FIELD.js";
 
-function BinaryBufferSerialization() {
 
+/**
+ *
+ * @param {BinarySerializationRegistry} registry
+ * @constructor
+ */
+function BinaryBufferSerialization(registry) {
+    assert.notEqual(registry, undefined, 'registry is undefined');
+    /**
+     *
+     * @type {BinarySerializationRegistry}
+     */
+    this.registry = registry;
 }
 
 /**
@@ -65,7 +75,7 @@ BinaryBufferSerialization.prototype.process = function (buffer, dataset) {
 
     const collectionSerializer = new BinaryCollectionSerializer();
 
-    collectionSerializer.setRegistry(gameBinarySerializationRegistry);
+    collectionSerializer.setRegistry(this.registry);
     collectionSerializer.setBuffer(buffer);
 
 

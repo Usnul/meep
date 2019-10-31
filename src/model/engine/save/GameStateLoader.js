@@ -27,9 +27,15 @@ class GameStateLoader {
      * @returns {BinaryBuffer}
      */
     extractState() {
-        const em = this.engine.entityManager;
+        /**
+         *
+         * @type {Engine}
+         */
+        const engine = this.engine;
+
+        const em = engine.entityManager;
         const dataset = em.dataset;
-        const serializer = new BinaryBufferSerialization();
+        const serializer = new BinaryBufferSerialization(engine.serializationRegistry);
 
         const state = new EncodingBinaryBuffer();
 

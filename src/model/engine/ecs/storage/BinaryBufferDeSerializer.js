@@ -3,10 +3,20 @@ import Task from "../../../core/process/task/Task.js";
 import TaskSignal from "../../../core/process/task/TaskSignal.js";
 import { assert } from "../../../core/assert.js";
 import { BinaryCollectionDeSerializer } from "./binary/collection/BinaryCollectionDeSerializer.js";
-import { gameBinarySerializationRegistry } from "../../../game/GameBinarySerializationRegistry.js";
 
-function BinaryBufferDeSerializer() {
+/**
+ *
+ * @param {BinarySerializationRegistry} registry
+ * @constructor
+ */
+function BinaryBufferDeSerializer(registry) {
+    assert.notEqual(registry, undefined, 'registry is undefined');
 
+    /**
+     *
+     * @type {BinarySerializationRegistry}
+     */
+    this.registry = registry;
 }
 
 /**
@@ -15,9 +25,10 @@ function BinaryBufferDeSerializer() {
  * @param {BinaryBuffer} buffer
  * @param {EntityManager} entityManager
  * @param {EntityComponentDataset} dataset
+ * @param {BinarySerializationRegistry} registry
  * @returns {Task}
  */
-function deserializeTask(numSerializedTypes, buffer, entityManager, dataset) {
+function deserializeTask(numSerializedTypes, buffer, entityManager, dataset, registry) {
 
     let typesDecoded = 0;
 
@@ -27,7 +38,7 @@ function deserializeTask(numSerializedTypes, buffer, entityManager, dataset) {
     const collectionDeSerializer = new BinaryCollectionDeSerializer();
 
     collectionDeSerializer.setBuffer(buffer);
-    collectionDeSerializer.setRegistry(gameBinarySerializationRegistry);
+    collectionDeSerializer.setRegistry(registry);
 
     let entity = 0;
 
@@ -149,7 +160,7 @@ BinaryBufferDeSerializer.prototype.process = function (buffer, entityManager, da
         //return NO-OP equivalent of a task
         task = emptyTask();
     } else {
-        task = deserializeTask(numSerializedTypes, buffer, entityManager, dataset);
+        task = deserializeTask(numSerializedTypes, buffer, entityManager, dataset, this.registry);
     }
 
     task.on.completed.add(function () {

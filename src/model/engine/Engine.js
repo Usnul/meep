@@ -51,6 +51,7 @@ import { HelpManager } from "../game/help/HelpManager.js";
 import { EffectManager } from "../game/util/effects/script/EffectManager.js";
 import { ClassRegistry } from "../core/model/ClassRegistry.js";
 import { StoryManager } from "./story/dialogue/StoryManager.js";
+import { BinarySerializationRegistry } from "./ecs/storage/binary/BinarySerializationRegistry.js";
 
 
 //gui
@@ -147,6 +148,12 @@ Engine.prototype.initialize = function () {
 
     //setup entity component system
     const em = this.entityManager = new EntityManager();
+
+    /**
+     * @readonly
+     * @type {BinarySerializationRegistry}
+     */
+    this.serializationRegistry = new BinarySerializationRegistry();
 
     //renderer setup
     this.scene = new ThreeScene();

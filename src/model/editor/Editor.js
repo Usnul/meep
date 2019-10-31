@@ -355,7 +355,12 @@ function Editor() {
             event.preventDefault();
             event.stopPropagation();
 
-            const entityManager = self.engine.entityManager;
+            /**
+             *
+             * @type {Engine}
+             */
+            const engine = self.engine;
+            const entityManager = engine.entityManager;
             const currentDataset = entityManager.dataset;
 
             //clone dataset
@@ -380,7 +385,7 @@ function Editor() {
             // Set music tracks back to time=0
             resetMusicTracks(dataset);
 
-            const serializer = new BinaryBufferSerialization();
+            const serializer = new BinaryBufferSerialization(engine.serializationRegistry);
 
             const state = new EncodingBinaryBuffer();
 
