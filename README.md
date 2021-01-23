@@ -1,6 +1,8 @@
 # meep
 Entity Component System game engine
 
+[![NPM Package][npm]][npm-url]
+
 # Installation
 
 via `npm`
@@ -83,3 +85,6 @@ This is how the engine was created, as a tool to help me build my games. Over ti
 
 ### Trouble shooting
 * If you're having trouble running 'start : dev' command, make sure you have `webpack-dev-server` npm package installed globally
+
+[npm]: https://img.shields.io/npm/v/@woosh/meep
+[npm-url]: https://www.npmjs.com/package/@woosh/meep
