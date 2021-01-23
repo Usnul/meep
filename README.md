@@ -1,7 +1,7 @@
 # meep
-Entity Component System game engine
-
 [![NPM Package][npm]][npm-url]
+
+Entity Component System game engine
 
 # Installation
 
