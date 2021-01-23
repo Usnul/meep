@@ -9,7 +9,7 @@ via `npm`
 npm i --save @woosh/meep
 ```
 
-![Attack](http://server1.lazy-kitty.com/gif/mir-1/English_Combat_Sand_Mage_Finshed_All_Enemies_and_Window_with_Result.gif)
+![Attack]( http://server1.lazy-kitty.com/gif/mir-1/English_Combat_Grass_Archer_Finshed_Giant_and_Window_with_Result.gif )
 
 # Features:
 * Centralized asset management system (see `AssetManager`)
