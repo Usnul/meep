@@ -90,10 +90,12 @@ Signal.prototype.addOne = function (h, context) {
 Signal.prototype.add = function (h, context) {
     assert.typeOf(h, "function", "handler");
 
-    if (!ENV_PRODUCTION) {
-        if (this.handlers.length + 1 === 100) {
-            console.error(`Number of handlers has is 100 now, possible leak detected`);
-        }
+    if (!window.ENV_PRODUCTION) {
+      if (this.handlers.length + 1 === 100) {
+        console.error(
+          `Number of handlers has is 100 now, possible leak detected`
+        );
+      }
     }
 
     const handler = new SignalHandler(h, context);

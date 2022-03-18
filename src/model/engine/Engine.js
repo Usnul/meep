@@ -59,166 +59,166 @@ function EngineSettings() {
  * @constructor
  */
 const Engine = function () {
-    this.initialize();
-    this.__datGui = gui;
+  this.initialize();
+  this.__datGui = gui;
 
-    if (!ENV_PRODUCTION) {
-        document.body.appendChild(gui.domElement);
-    }
+  if (!window.ENV_PRODUCTION) {
+    document.body.appendChild(gui.domElement);
+  }
 
-    gui.domElement.classList.add('ui-dev-menu');
+  gui.domElement.classList.add("ui-dev-menu");
 };
 
 function dat_makeFileField(callback) {
-    const el = document.createElement('input');
-    el.type = "file";
-    el.style.visibility = "hidden";
+  const el = document.createElement("input");
+  el.type = "file";
+  el.style.visibility = "hidden";
 
-    const result = {
-        load: function () {
-            el.click();
-            el.onchange = function () {
-                const files = el.files;
-                for (let i = 0; i < files.length; i++) {
-                    const file = files[i];
-                    const reader = new FileReader();
-                    reader.onload = function (e) {
-                        callback(e.target.result);
-                    };
-                    reader.readAsDataURL(file);
-                }
-            }
+  const result = {
+    load: function () {
+      el.click();
+      el.onchange = function () {
+        const files = el.files;
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            callback(e.target.result);
+          };
+          reader.readAsDataURL(file);
         }
-    };
-    return result;
+      };
+    },
+  };
+  return result;
 }
 
 Engine.prototype.initialize = function () {
+  /**
+   *
+   * @type {OptionGroup}
+   */
+  this.options = new OptionGroup();
 
-    /**
-     *
-     * @type {OptionGroup}
-     */
-    this.options = new OptionGroup();
+  /**
+   *
+   * @type {ClassRegistry}
+   */
+  this.classRegistry = new ClassRegistry();
 
-    /**
-     *
-     * @type {ClassRegistry}
-     */
-    this.classRegistry = new ClassRegistry();
+  this.settings = new EngineSettings();
 
+  this.executor = new ConcurrentExecutor(0, 10);
 
-    this.settings = new EngineSettings();
+  this.services = {
+    compression: new CompressionService(),
+  };
 
-    this.executor = new ConcurrentExecutor(0, 10);
+  /**
+   *
+   * @type {Storage}
+   */
+  this.storage = new IndexedDBStorage(
+    "com.lazykitty.komrade.game.state",
+    this.services
+  );
+  this.storage.compressionEnabled = false;
 
-    this.services = {
-        compression: new CompressionService()
-    };
+  /**
+   *
+   * @type {AssetManager}
+   */
+  this.assetManager = new AssetManager();
+  initAssetManager(this.assetManager);
 
-    /**
-     *
-     * @type {Storage}
-     */
-    this.storage = new IndexedDBStorage("com.lazykitty.komrade.game.state", this.services);
-    this.storage.compressionEnabled = false;
+  this.localization = new Localization();
+  this.localization.setAssetManager(this.assetManager);
 
-    /**
-     *
-     * @type {AssetManager}
-     */
-    this.assetManager = new AssetManager();
-    initAssetManager(this.assetManager);
+  //setup entity component system
+  const em = (this.entityManager = new EntityManager());
 
-    this.localization = new Localization();
-    this.localization.setAssetManager(this.assetManager);
+  /**
+   * @readonly
+   * @type {BinarySerializationRegistry}
+   */
+  this.serializationRegistry = new BinarySerializationRegistry();
 
-    //setup entity component system
-    const em = this.entityManager = new EntityManager();
+  //renderer setup
+  this.scene = new ThreeScene();
+  //prevent automatic updates to all descendants of the scene, such updates are very wasteful
+  this.scene.autoUpdate = false;
+  //prevent scene matrix from automatically updating, as it would result in updates to the entire scene graph
+  this.scene.matrixAutoUpdate = false;
 
-    /**
-     * @readonly
-     * @type {BinarySerializationRegistry}
-     */
-    this.serializationRegistry = new BinarySerializationRegistry();
+  const innerWidth = window.innerWidth / 3;
+  const innerHeight = window.innerHeight / 3;
 
-    //renderer setup
-    this.scene = new ThreeScene();
-    //prevent automatic updates to all descendants of the scene, such updates are very wasteful
-    this.scene.autoUpdate = false;
-    //prevent scene matrix from automatically updating, as it would result in updates to the entire scene graph
-    this.scene.matrixAutoUpdate = false;
+  this.camera = new ThreePerspectiveCamera(45, innerWidth / innerHeight, 1, 50);
 
-    const innerWidth = window.innerWidth / 3;
-    const innerHeight = window.innerHeight / 3;
+  /**
+   *
+   * @type {GraphicsEngine}
+   */
+  const ge = (this.graphics = new GraphicsEngine(this.camera, this.scene, em));
 
-    this.camera = new ThreePerspectiveCamera(45, innerWidth / innerHeight, 1, 50);
+  try {
+    ge.start();
+  } catch (e) {
+    console.log("Failed to start GraphicEngine: ", e);
+  }
 
+  this.inputEngine = new InputEngine(ge.domElement, window);
 
-    /**
-     *
-     * @type {GraphicsEngine}
-     */
-    const ge = this.graphics = new GraphicsEngine(this.camera, this.scene, em);
+  //sound engine
+  const soundEngine = new SoundEngine();
+  soundEngine.volume = 1;
 
-    try {
-        ge.start();
-    } catch (e) {
-        console.log("Failed to start GraphicEngine: ", e);
-    }
+  /**
+   *
+   * @type {SoundEngine}
+   */
+  this.sound = soundEngine;
 
-    this.inputEngine = new InputEngine(ge.domElement, window);
+  /**
+   * Graphical User Interface engine
+   * @type {GUIEngine}
+   */
+  this.gui = new GUIEngine();
 
-    //sound engine
-    const soundEngine = new SoundEngine();
-    soundEngine.volume = 1;
+  this.achievements = new AchievementManager();
+  this.achievements.initialize({
+    assetManager: this.assetManager,
+    gateway: new StorageAchievementGateway(this.storage),
+    localization: this.localization,
+    entityManager: this.entityManager,
+  });
 
-    /**
-     *
-     * @type {SoundEngine}
-     */
-    this.sound = soundEngine;
+  this.sceneManager = new SceneManager(this.entityManager);
+  this.ticker = new Ticker(em);
+  this.ticker.subscribe((timeDelta) => this.entityManager.simulate(timeDelta));
 
-    /**
-     * Graphical User Interface engine
-     * @type {GUIEngine}
-     */
-    this.gui = new GUIEngine();
+  //
+  this.grid = new Grid(this);
 
-    this.achievements = new AchievementManager();
-    this.achievements.initialize({
-        assetManager: this.assetManager,
-        gateway: new StorageAchievementGateway(this.storage),
-        localization: this.localization,
-        entityManager: this.entityManager
-    });
+  this.devices = {
+    pointer: new PointerDevice(window),
+    keyboard: new KeyboardDevice(window),
+  };
+  this.initializeViews();
 
-    this.sceneManager = new SceneManager(this.entityManager);
-    this.ticker = new Ticker(em);
-    this.ticker.subscribe(timeDelta => this.entityManager.simulate(timeDelta));
+  this.devices.pointer.start();
+  this.devices.keyboard.start();
 
-    //
-    this.grid = new Grid(this);
+  //process settings
+  this.initializeSettings();
 
-    this.devices = {
-        pointer: new PointerDevice(window),
-        keyboard: new KeyboardDevice(window)
-    };
-    this.initializeViews();
+  console.log("engine initialized");
 
-    this.devices.pointer.start();
-    this.devices.keyboard.start();
+  this.gameStateLoader = new GameStateLoader(this);
 
-    //process settings
-    this.initializeSettings();
-
-    console.log("engine initialized");
-
-    this.gameStateLoader = new GameStateLoader(this);
-
-    if (!ENV_PRODUCTION) {
-        this.enableEditor();
-    }
+  if (!window.ENV_PRODUCTION) {
+    this.enableEditor();
+  }
 };
 
 Engine.prototype.initializeViews = function () {
