@@ -69,10 +69,10 @@ function configureThreeRenderer(webGLRenderer) {
     webGLRenderer.sortObjects = true;
 
     if (window.ENV_PRODUCTION) {
-      //disable shader error checking in production build
-      webGLRenderer.debug.checkShaderErrors = false;
+        //disable shader error checking in production build
+        webGLRenderer.debug.checkShaderErrors = false;
     } else {
-      webGLRenderer.debug.checkShaderErrors = true;
+        webGLRenderer.debug.checkShaderErrors = true;
     }
 }
 

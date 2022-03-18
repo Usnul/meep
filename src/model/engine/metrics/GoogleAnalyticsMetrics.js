@@ -89,9 +89,9 @@ export class GoogleAnalyticsMetrics extends Metrics {
         }
 
         if (window.ENV_PRODUCTION) {
-          this.api.gtag("event", type, payload);
+            this.api.gtag('event', type, payload);
         } else {
-          console.log("[DEBUG] metric would be sent", type, payload);
+            console.log("[DEBUG] metric would be sent", type, payload);
         }
     }
 }
