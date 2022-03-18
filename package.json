@@ -9,9 +9,8 @@
     "msgpack-lite": "./app/lib/msgpack-lite/msgpack.min.js"
   },
   "scripts": {
-    "start": "vite",
-    "storybook": "start-storybook -s ./public -p 6006",
-    "build": "vite build"
+    "start": "npx vite",
+    "build": "npx vite build"
   },
   "dependencies": {
     "fast-levenshtein": "2.0.6",
