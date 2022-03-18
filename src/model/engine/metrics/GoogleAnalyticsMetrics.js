@@ -88,7 +88,7 @@ export class GoogleAnalyticsMetrics extends Metrics {
             payload.event_label = event.label;
         }
 
-        if (ENV_PRODUCTION) {
+        if (window.ENV_PRODUCTION) {
             this.api.gtag('event', type, payload);
         } else {
             console.log("[DEBUG] metric would be sent", type, payload);
