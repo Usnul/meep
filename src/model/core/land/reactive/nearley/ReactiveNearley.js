@@ -1,6 +1,5 @@
 // Generated automatically by nearley, version 2.16.0
 // http://github.com/Hardmath123/nearley
-(function () {
     function id(x) {
         return x[0];
     }
@@ -462,4 +461,5 @@
     } else {
         window.grammar = grammar;
     }
-})();
+
+export default grammar
