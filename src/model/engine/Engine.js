@@ -94,131 +94,131 @@ function dat_makeFileField(callback) {
 }
 
 Engine.prototype.initialize = function () {
-  /**
-   *
-   * @type {OptionGroup}
-   */
-  this.options = new OptionGroup();
+    /**
+     *
+     * @type {OptionGroup}
+     */
+    this.options = new OptionGroup();
 
-  /**
-   *
-   * @type {ClassRegistry}
-   */
-  this.classRegistry = new ClassRegistry();
+    /**
+     *
+     * @type {ClassRegistry}
+     */
+    this.classRegistry = new ClassRegistry();
 
-  this.settings = new EngineSettings();
+    this.settings = new EngineSettings();
 
-  this.executor = new ConcurrentExecutor(0, 10);
+    this.executor = new ConcurrentExecutor(0, 10);
 
-  this.services = {
-    compression: new CompressionService(),
-  };
+    this.services = {
+        compression: new CompressionService(),
+    };
 
-  /**
-   *
-   * @type {Storage}
-   */
-  this.storage = new IndexedDBStorage(
-    "com.lazykitty.komrade.game.state",
-    this.services
-  );
-  this.storage.compressionEnabled = false;
+    /**
+     *
+     * @type {Storage}
+     */
+    this.storage = new IndexedDBStorage(
+        "com.lazykitty.komrade.game.state",
+        this.services
+    );
+    this.storage.compressionEnabled = false;
 
-  /**
-   *
-   * @type {AssetManager}
-   */
-  this.assetManager = new AssetManager();
-  initAssetManager(this.assetManager);
+    /**
+     *
+     * @type {AssetManager}
+     */
+    this.assetManager = new AssetManager();
+    initAssetManager(this.assetManager);
 
-  this.localization = new Localization();
-  this.localization.setAssetManager(this.assetManager);
+    this.localization = new Localization();
+    this.localization.setAssetManager(this.assetManager);
 
-  //setup entity component system
-  const em = (this.entityManager = new EntityManager());
+    //setup entity component system
+    const em = (this.entityManager = new EntityManager());
 
-  /**
-   * @readonly
-   * @type {BinarySerializationRegistry}
-   */
-  this.serializationRegistry = new BinarySerializationRegistry();
+    /**
+     * @readonly
+     * @type {BinarySerializationRegistry}
+     */
+    this.serializationRegistry = new BinarySerializationRegistry();
 
-  //renderer setup
-  this.scene = new ThreeScene();
-  //prevent automatic updates to all descendants of the scene, such updates are very wasteful
-  this.scene.autoUpdate = false;
-  //prevent scene matrix from automatically updating, as it would result in updates to the entire scene graph
-  this.scene.matrixAutoUpdate = false;
+    //renderer setup
+    this.scene = new ThreeScene();
+    //prevent automatic updates to all descendants of the scene, such updates are very wasteful
+    this.scene.autoUpdate = false;
+    //prevent scene matrix from automatically updating, as it would result in updates to the entire scene graph
+    this.scene.matrixAutoUpdate = false;
 
-  const innerWidth = window.innerWidth / 3;
-  const innerHeight = window.innerHeight / 3;
+    const innerWidth = window.innerWidth / 3;
+    const innerHeight = window.innerHeight / 3;
 
-  this.camera = new ThreePerspectiveCamera(45, innerWidth / innerHeight, 1, 50);
+    this.camera = new ThreePerspectiveCamera(45, innerWidth / innerHeight, 1, 50);
 
-  /**
-   *
-   * @type {GraphicsEngine}
-   */
-  const ge = (this.graphics = new GraphicsEngine(this.camera, this.scene, em));
+    /**
+     *
+     * @type {GraphicsEngine}
+     */
+    const ge = (this.graphics = new GraphicsEngine(this.camera, this.scene, em));
 
-  try {
-    ge.start();
-  } catch (e) {
-    console.log("Failed to start GraphicEngine: ", e);
-  }
+    try {
+        ge.start();
+    } catch (e) {
+        console.log("Failed to start GraphicEngine: ", e);
+    }
 
-  this.inputEngine = new InputEngine(ge.domElement, window);
+    this.inputEngine = new InputEngine(ge.domElement, window);
 
-  //sound engine
-  const soundEngine = new SoundEngine();
-  soundEngine.volume = 1;
+    //sound engine
+    const soundEngine = new SoundEngine();
+    soundEngine.volume = 1;
 
-  /**
-   *
-   * @type {SoundEngine}
-   */
-  this.sound = soundEngine;
+    /**
+     *
+     * @type {SoundEngine}
+     */
+    this.sound = soundEngine;
 
-  /**
-   * Graphical User Interface engine
-   * @type {GUIEngine}
-   */
-  this.gui = new GUIEngine();
+    /**
+     * Graphical User Interface engine
+     * @type {GUIEngine}
+     */
+    this.gui = new GUIEngine();
 
-  this.achievements = new AchievementManager();
-  this.achievements.initialize({
-    assetManager: this.assetManager,
-    gateway: new StorageAchievementGateway(this.storage),
-    localization: this.localization,
-    entityManager: this.entityManager,
-  });
+    this.achievements = new AchievementManager();
+    this.achievements.initialize({
+        assetManager: this.assetManager,
+        gateway: new StorageAchievementGateway(this.storage),
+        localization: this.localization,
+        entityManager: this.entityManager,
+    });
 
-  this.sceneManager = new SceneManager(this.entityManager);
-  this.ticker = new Ticker(em);
-  this.ticker.subscribe((timeDelta) => this.entityManager.simulate(timeDelta));
+    this.sceneManager = new SceneManager(this.entityManager);
+    this.ticker = new Ticker(em);
+    this.ticker.subscribe((timeDelta) => this.entityManager.simulate(timeDelta));
 
-  //
-  this.grid = new Grid(this);
+    //
+    this.grid = new Grid(this);
 
-  this.devices = {
-    pointer: new PointerDevice(window),
-    keyboard: new KeyboardDevice(window),
-  };
-  this.initializeViews();
+    this.devices = {
+        pointer: new PointerDevice(window),
+        keyboard: new KeyboardDevice(window),
+    };
+    this.initializeViews();
 
-  this.devices.pointer.start();
-  this.devices.keyboard.start();
+    this.devices.pointer.start();
+    this.devices.keyboard.start();
 
-  //process settings
-  this.initializeSettings();
+    //process settings
+    this.initializeSettings();
 
-  console.log("engine initialized");
+    console.log("engine initialized");
 
-  this.gameStateLoader = new GameStateLoader(this);
+    this.gameStateLoader = new GameStateLoader(this);
 
-  if (!window.ENV_PRODUCTION) {
-    this.enableEditor();
-  }
+    if (!window.ENV_PRODUCTION) {
+        this.enableEditor();
+    }
 };
 
 Engine.prototype.initializeViews = function () {
