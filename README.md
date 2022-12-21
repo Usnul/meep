@@ -1,3 +1,6 @@
+# Archivation notice
+Archived. I took project back into closed source as there was little interest. Please feel free to use this version for your reference. If you're interested in closed-source version - please reach out to me.
+
 # meep
 [![NPM Package][npm]][npm-url]
 
