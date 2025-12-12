@@ -37,7 +37,7 @@
     "webpack": "4.39.2",
     "webpack-bundle-analyzer": "3.4.1",
     "webpack-cli": "3.3.7",
-    "webpack-dev-server": "3.8.0"
+    "webpack-dev-server": "5.2.1"
   },
   "browser": {
     "LZMA": "./app/lib/lzma_worker.js",
