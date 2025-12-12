@@ -53,7 +53,7 @@
     "gl-matrix": "3.1.0",
     "msgpack-lite": "0.1.26",
     "simplex-noise": "2.4.0",
-    "three": "0.109.0",
+    "three": "0.137.0",
     "nearley": "2.19.0",
     "dat.gui": "0.7.6"
   }
